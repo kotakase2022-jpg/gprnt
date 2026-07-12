@@ -3,8 +3,9 @@
 ## Cycle 5 — user-directed JPX disclaimer removal and Production redeploy
 
 - **Branch:** `agent/remove-jpx-disclaimer`
-- **Target PR:** [#6](https://github.com/kotakase2022-jpg/gprnt/pull/6) — Draft from this branch to protected `main`
-- **Preview-verified head:** `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`
+- **Target PR:** [#6](https://github.com/kotakase2022-jpg/gprnt/pull/6) — Ready from this branch to protected `main`
+- **Runtime-verified implementation head:** `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`
+- **Final code/test head before this handoff-only evidence update:** `cf2319b28c9a0dcf151525046a512c25cbc3907f`
 - **Requested change:** remove the fixed JPX concept disclaimer from every rendered surface and repository copy.
 - **Positioning boundary retained:** product copy must not claim or imply formal JPX approval, endorsement, partnership, provision, or data provenance; synthetic-data labeling remains.
 - **Primary Production baseline before this change:** https://terrast-disclosure-hub-prod.vercel.app — project `terrast-disclosure-hub-prod`, deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC`, protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668`, READY, remote Playwright 3/3.
@@ -38,9 +39,10 @@
 - `npm run test:e2e`: passed — 3/3 Chromium tests covering the golden company workflow, tablet landing/login and tenant/deep-link isolation.
 - `npm run agents:check`: passed as part of `npm run check`; `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - React review: no hook, state, event, accessibility or TypeScript behavior changed; only obsolete imports and render containers were removed.
-- **Required PR CI:** passed 7/7 on head `a098935` — `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; [Actions run 29201481173](https://github.com/kotakase2022-jpg/gprnt/actions/runs/29201481173). Both Vercel project status contexts and Preview Comments also passed on the same head.
-- **Primary PR Preview:** READY — project `terrast-disclosure-hub-prod`, deployment `dpl_D7vTtJLx1fTj66vPeBE491gdnQ6c`, commit `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`, unique URL `https://terrast-disclosure-hub-prod-ov53a5yqi.vercel.app`, branch alias `https://terrast-disclosure-hub-pr-git-3b79ed-kotakase2022-jpgs-projects.vercel.app`.
-- **Primary Preview runtime:** passed remote Playwright 3/3 after supplying a temporary Vercel Automation Bypass header. The tests verified absence on landing, demo login, authenticated app and report, retained `法的適合性や保証を示すレポートではありません。`, and zero collected console/page errors. The first unauthenticated attempt correctly reached Vercel Authentication rather than the app; both temporary bypass tokens created during diagnosis were revoked after verification.
+- **Required final code/test CI:** passed 7/7 on head `cf2319b` — `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; [Actions run 29201942545](https://github.com/kotakase2022-jpg/gprnt/actions/runs/29201942545), attempt 1. `e2e-smoke` passed 3/3 with zero retry/flaky/failed annotations. Both Vercel project status contexts and Preview Comments also passed on the same head.
+- **Primary final-code PR Preview:** READY — project `terrast-disclosure-hub-prod`, deployment `dpl_2BevjKjE2KzfSdnPqD8eZzikhWuK`, commit `cf2319b28c9a0dcf151525046a512c25cbc3907f`, unique URL `https://terrast-disclosure-hub-prod-9zont0u1l.vercel.app`, branch alias `https://terrast-disclosure-hub-pr-git-3b79ed-kotakase2022-jpgs-projects.vercel.app`.
+- **Primary Preview runtime:** passed remote Playwright 3/3 on implementation head `a098935` after supplying a temporary Vercel Automation Bypass header. The tests verified absence on landing, demo login, authenticated app and report, retained `法的適合性や保証を示すレポートではありません。`, and zero collected console/page errors. Changes after that runtime-verified head are documentation and E2E-harness-only; after the keyboard-based role-switch stabilization, local `--repeat-each=3` passed 9/9 and final-head CI passed without retry. The first unauthenticated Preview attempt correctly reached Vercel Authentication rather than the app; both temporary bypass tokens created during diagnosis were revoked after verification.
+- **Evidence-update tip:** this commit changes only `AI_HANDOFF.md` to address the Codex review evidence finding; GitHub checks and Vercel metadata on the resulting docs-only PR tip remain the authoritative final-head gate.
 - **Post-merge Production:** 未実施 — merge and Git-connected Production redeploy are pending.
 
 ### Cycle 5 unresolved items and priorities
@@ -52,8 +54,9 @@
 ### Cycle 5 review status
 
 - Independent Codex audit: completed with no P0/P1/P2 finding; verified total rendered/source removal, no empty layout artifact, byte-identical agent rules, retained report warning and retained no-false-approval boundary.
+- GitHub Codex review: one P2 evidence-freshness thread on `AI_HANDOFF.md`; addressed by this handoff-only update using final code/test head `cf2319b`, CI run `29201942545` and Preview deployment `dpl_2BevjKjE2KzfSdnPqD8eZzikhWuK`.
 - Claude Code: the official `@anthropic-ai/claude-code` invocation was attempted with the requested review focus but returned `Not logged in · Please run /login`; no Claude review is claimed.
-- CodeRabbit: no comment/review yet; request after this Preview evidence commit is pushed and the PR becomes Ready.
+- CodeRabbit: explicitly requested with `@coderabbitai review` after the PR became Ready; no CodeRabbit comment/review has arrived.
 - Cursor Bugbot: attempted automatically on PR #6 but returned `usage limit reached`; no Bugbot review is claimed.
 
 ### Concrete prompt for the next AI
