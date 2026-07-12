@@ -3,7 +3,7 @@
 ## Cycle 4 — first Supabase production data slice
 
 - **Current branch:** `agent/supabase-data-path-p0`
-- **Target PR:** pending creation after local quality gates
+- **Target PR:** [#4](https://github.com/kotakase2022-jpg/gprnt/pull/4) — Draft from `agent/supabase-data-path-p0` to protected `main`
 - **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
 - **Release evidence PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) merged to `main` as `9ce1843`
 - **Cycle number:** 4 (explicitly resumed by the user after the completed three-cycle synthetic-demo release)
@@ -60,7 +60,8 @@
 - `npm run check`: passed — Prettier, ESLint with zero warnings, TypeScript strict, 24 files / 114 unit tests, two-migration Supabase static checks, Next.js production build.
 - `npm run test:coverage`: passed — statements 70.39%, branches 68.75%, functions 61.87%, lines 71.81%; domain statements 86.74%.
 - `npm run test:e2e`: passed — 3/3 Chromium tests. Golden scenario covers login, company selection, sync preview/apply/conflict, manual reason/scope/boundary persistence, AI draft, submit, revision, edit, resubmit, approval, approved edit lock, report and operator reflection; additional tests cover tablet layout, company isolation and denied role deep links.
-- Cycle 3 historical evidence: the then-current 3/3 suite passed against `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`. This is not Cycle 4 Preview evidence; the updated reason/scope/boundary scenario must be run against the new branch Preview after push.
+- Cycle 3 historical evidence: the then-current 3/3 suite passed against `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`. This is distinct from the Cycle 4 Preview evidence recorded on the next line.
+- `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app npm run test:e2e`: passed — Cycle 4 Preview 3/3, including the updated manual reason/scope/boundary provenance assertion, with no captured console/page errors.
 - `npm run agents:check`: passed — `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - Build output: 20 route entries including dynamic `/api/ai/disclosure` and `/api/workspace/metric-values`; static generation completed for 22 pages/assets.
 - `npm audit`: two moderate transitive advisories from Next.js's bundled PostCSS remain; npm's suggested force fix is a destructive Next.js downgrade and was not applied.
@@ -68,20 +69,21 @@
 ### Deployment / external state
 
 - **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — the stable alias tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment before this final handoff update was `dpl_9JgBUKyKsL9i4ign7qa6cDS7rk8C`, for which Vercel API reported `githubCommitRef=main` and `githubCommitSha=9ce1843b7d474a5512229e18836e14914c713fb3`; remote Playwright 3/3 passed against the alias afterward. A docs-only handoff merge may advance the deployment ID without changing runtime behavior.
-- **Cycle 4 Vercel Preview URL:** pending branch push / Git-connected Preview
+- **Cycle 4 Vercel Preview URL:** https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app — READY as `dpl_7Zc9AsgchHNFTNKzQYx285bwYv8Z`; remote Playwright 3/3 and an independent browser snapshot of landing + `/app/data` passed with empty console/page-error output
+- **GitHub Cycle 4 PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/4 — Draft; head `6f126ed97c292c9c390a2df706a1c6e3b1fa16e2` before this evidence-only handoff update
 - **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
 - **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2 — MERGED
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
-- **GitHub CI:** all seven required jobs passed on implementation PR head `dbd5c52` and release-evidence PR head `0e3ca6f`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed before each squash merge.
+- **GitHub CI:** all seven required jobs passed on Cycle 4 PR #4 head `6f126ed`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel and Preview Comments checks also passed. Historical PR #1/#2 checks remain documented in their PRs.
 - **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
 
 - Independent Codex subagents performed two passes of security and release-diff audits. Findings fixed before publication include effective-role substitution, post-commit ambiguous failure, mutable manual identity, tenant/global catalog collision, historical-value hiding, PostgREST FK ambiguity, missing reason/scope/boundary audit provenance, unsafe scalar coercion, invented provenance fallback, Auth-delete history cascade, closed/no-catalog dead actions, tenant form-state leakage, Demo provenance loss, and unaudited production CSV exposure.
 - Claude Code `2.1.207` was re-invoked for the Cycle 4 diff through the official `@anthropic-ai/claude-code` package after the shared-rule prompt, but independent review could not run because it returned `Not logged in · Please run /login`. Do not claim Claude review completed.
-- CodeRabbit: `@coderabbitai review` was requested and the PR was moved from Draft to Ready, but no review/comment arrived, so it supplied no actionable review.
-- Cursor Bugbot: not manually invoked. Its installed GitHub integration automatically added a high-risk overview but no actionable inline finding; its comment also reported `usage limit reached`.
+- CodeRabbit: `@coderabbitai review` was requested on PR #4 at https://github.com/kotakase2022-jpg/gprnt/pull/4#issuecomment-4951847075; no Cycle 4 response is recorded yet, so no CodeRabbit review is claimed.
+- Cursor Bugbot: its installed GitHub integration attempted PR #4 automatically but reported `usage limit reached`, so it supplied no review finding.
 
 ### Unresolved items
 
