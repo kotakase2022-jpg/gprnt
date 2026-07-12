@@ -3,7 +3,7 @@
 ## Cycle 5 — user-directed JPX disclaimer removal and Production redeploy
 
 - **Branch:** `agent/remove-jpx-disclaimer`
-- **Target PR:** pending creation from this branch to protected `main`
+- **Target PR:** [#6](https://github.com/kotakase2022-jpg/gprnt/pull/6) — Draft from this branch to protected `main`
 - **Requested change:** remove the fixed JPX concept disclaimer from every rendered surface and repository copy.
 - **Positioning boundary retained:** product copy must not claim or imply formal JPX approval, endorsement, partnership, provision, or data provenance; synthetic-data labeling remains.
 - **Primary Production baseline before this change:** https://terrast-disclosure-hub-prod.vercel.app — project `terrast-disclosure-hub-prod`, deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC`, protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668`, READY, remote Playwright 3/3.
@@ -50,7 +50,8 @@
 
 - Independent Codex audit: completed with no P0/P1/P2 finding; verified total rendered/source removal, no empty layout artifact, byte-identical agent rules, retained report warning and retained no-false-approval boundary.
 - Claude Code: the official `@anthropic-ai/claude-code` invocation was attempted with the requested review focus but returned `Not logged in · Please run /login`; no Claude review is claimed.
-- CodeRabbit / Cursor Bugbot: 未実施 until the PR exists.
+- CodeRabbit: 未実施; request after final Preview evidence is attached and the PR becomes Ready.
+- Cursor Bugbot: the account spending-limit change was not saved before the user redirected the task; automatic review may remain unavailable at the existing limit.
 
 ### Concrete prompt for the next AI
 
