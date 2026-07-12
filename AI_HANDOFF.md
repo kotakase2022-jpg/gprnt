@@ -64,6 +64,7 @@
 - Cycle 3 historical evidence: the then-current 3/3 suite passed against `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`. This is distinct from the Cycle 4 Preview evidence recorded on the next line.
 - `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app npm run test:e2e`: passed — Cycle 4 Preview 3/3, including the updated manual reason/scope/boundary provenance assertion, with no captured console/page errors.
 - `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub.vercel.app npm run test:e2e`: passed — Cycle 4 Production 3/3 after PR #4 merged; landing and Demo company-admin `/app/data` also reported zero browser-console and page errors.
+- PR #5 evidence Preview remote Playwright: passed 3/3. Its GitHub E2E job succeeded after one retry where stacked success toasts temporarily intercepted the role-switch click; the same golden scenario then passed six additional local stress reruns (three parallel and three serial) without recurrence.
 - `npm run agents:check`: passed — `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - `npm run db:check`: passed with both Git/CI LF and Windows-checkout CRLF SQL inputs after normalizing line endings inside the read-only static checker.
 - Build output: 20 route entries including dynamic `/api/ai/disclosure` and `/api/workspace/metric-values`; static generation completed for 22 pages/assets.
@@ -73,12 +74,14 @@
 
 - **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — PR #4 runtime deployment `dpl_9MEM7tHkW4WQQkpyBa4Z5u5Nw6kG` was READY for `githubCommitRef=main` / `githubCommitSha=cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`; its unique URL is https://terrast-disclosure-qujsu0kd6-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + Demo `/app/data` browser checks passed with zero console/page errors. The release-evidence/static-checker merge may advance the deployment ID without changing application runtime code.
 - **Cycle 4 Vercel Preview URL:** https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app — final implementation head `e5a3910ad6a71d65b9d3c4aab7eefdba5b65f300` was READY as `dpl_FCzhk8jL4uz4fYwiFeJru2wa479S`; its unique URL is https://terrast-disclosure-8a840bcdz-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + `/app/data` browser checks passed with zero console/page errors.
+- **Cycle 4 release-evidence Preview URL:** https://terrast-disclosure-hub-git-ag-f10375-kotakase2022-jpgs-projects.vercel.app — PR #5 pre-final-evidence head `e1072db17d60ed97bc838fecc14d2c20fbb313da` was READY as `dpl_CqHcrG6z62okLw6Y5UoYsb5VB7UD`; its unique URL is https://terrast-disclosure-q5veqnb5i-kotakase2022-jpgs-projects.vercel.app and remote Playwright passed 3/3.
 - **GitHub Cycle 4 PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/4 — MERGED as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
 - **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
 - **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2 — MERGED
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
 - **GitHub CI:** all seven required jobs passed on final Cycle 4 PR #4 head `e5a3910ad6a71d65b9d3c4aab7eefdba5b65f300`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel and Preview Comments checks also passed. Historical PR #1/#2 checks remain documented in their PRs.
+- **Release-evidence CI:** all seven required jobs plus Vercel and Preview Comments passed on PR #5 head `e1072db17d60ed97bc838fecc14d2c20fbb313da` before this final evidence update. The successful E2E check contained the one toast-related retry described above; follow-up local and remote reruns were clean.
 - **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
