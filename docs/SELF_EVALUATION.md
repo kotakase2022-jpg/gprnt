@@ -21,7 +21,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 - Tests: `src/**/*.test.*`, `e2e/critical-flow.spec.ts`, `scripts/check-supabase.mjs`, `.github/workflows/ci.yml`.
 - Documents: `docs/ARCHITECTURE.md`, `docs/TERRAST_INTEGRATION.md`, `docs/SECURITY.md`, `docs/JPX_PARTNERSHIP_DEMO.md`.
 - Local result: `npm run check` passed; 19 files / 70 tests passed; Playwright 3/3 passed; coverage statements 71.47%, branches 69.30%, functions 66.28%, lines 72.30%; 21 routes built.
-- URLs: [Production](https://terrast-disclosure-hub.vercel.app), [Preview](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app) and merged [PR #1](https://github.com/kotakase2022-jpg/gprnt/pull/1) are verified. Production deployment `dpl_717sJtSrQL2ZCEJPMLi9AQj8CxJD` is linked to `main` commit `5f22374` and passed the final remote Playwright 3/3.
+- URLs: [Production](https://terrast-disclosure-hub.vercel.app), [Preview](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app), merged implementation [PR #1](https://github.com/kotakase2022-jpg/gprnt/pull/1), and merged evidence [PR #2](https://github.com/kotakase2022-jpg/gprnt/pull/2) are verified. The Production alias tracks protected `main`; last inspected runtime deployment `dpl_9JgBUKyKsL9i4ign7qa6cDS7rk8C` (`9ce1843`) passed the final remote Playwright 3/3.
 
 ## Autonomous improvement cycles
 

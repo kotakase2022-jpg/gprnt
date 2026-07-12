@@ -2,9 +2,10 @@
 
 ## Cycle 3 — audited release complete
 
-- **Current branch:** `agent/release-evidence`
-- **Target PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) — release-evidence-only follow-up against `main`
+- **Current branch:** `main` (final handoff state)
+- **Target PR:** none — release complete
 - **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
+- **Release evidence PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) merged to `main` as `9ce1843`
 - **Cycle number:** 3 (derived from the initial implementation and two recorded improvement passes; the three-cycle autonomous-improvement limit is reached)
 - **Status:** MVP release complete — protected main merge, Git-connected Production, public Preview, CI and browser verification are green
 - **Evaluation:** 87 / 100; see `docs/SELF_EVALUATION.md`
@@ -61,13 +62,13 @@
 
 ### Deployment / external state
 
-- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — READY on Git-connected deployment `dpl_717sJtSrQL2ZCEJPMLi9AQj8CxJD`; Vercel API verified `githubCommitRef=main` and `githubCommitSha=5f22374e2cc742c562b7a6ad1b9674a60f7b8297`; remote Playwright 3/3, custom 404 and clean browser errors passed after the alias moved to this deployment
+- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — the stable alias tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment before this final handoff update was `dpl_9JgBUKyKsL9i4ign7qa6cDS7rk8C`, for which Vercel API reported `githubCommitRef=main` and `githubCommitSha=9ce1843b7d474a5512229e18836e14914c713fb3`; remote Playwright 3/3 passed against the alias afterward. A docs-only handoff merge may advance the deployment ID without changing runtime behavior.
 - **Vercel Preview URL:** https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app — READY; landing, demo, golden E2E, tablet, tenant/RBAC checks and custom 404 verified
 - **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
-- **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2
+- **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2 — MERGED
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
-- **GitHub CI:** all seven required jobs passed on the final PR head `dbd5c52`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed before squash merge.
+- **GitHub CI:** all seven required jobs passed on implementation PR head `dbd5c52` and release-evidence PR head `0e3ca6f`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed before each squash merge.
 - **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
