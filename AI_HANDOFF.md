@@ -5,8 +5,8 @@
 - **Current branch:** `agent/terrast-disclosure-hub-mvp`
 - **Target PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) against `main`
 - **Cycle number:** 3 (derived from the initial implementation and two recorded improvement passes; the three-cycle autonomous-improvement limit is reached)
-- **Status:** local and GitHub CI are green; public Preview is verified; review/branch protection/main Production remain
-- **Evaluation:** 86 / 100 before protected main merge and Production verification; see `docs/SELF_EVALUATION.md`
+- **Status:** local/CI/Preview/Production are green and main protection is active; protected PR merge and main deployment reconciliation remain
+- **Evaluation:** 87 / 100; see `docs/SELF_EVALUATION.md`
 
 ### Improvement history
 
@@ -60,13 +60,13 @@
 
 ### Deployment / external state
 
-- **Vercel Production URL:** pending main deployment and browser verification
+- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — READY; remote Playwright 3/3, custom 404 and clean browser errors verified on deployment `dpl_Gq8BCey1zQzWkzcjbovjmmTjTD7c`; reconcile with the main-triggered deployment after merge
 - **Vercel Preview URL:** https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app — READY; landing, demo, golden E2E, tablet, tenant/RBAC checks and custom 404 verified
 - **GitHub PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
 - **GitHub CI:** all seven required jobs passed on commit `8447c96`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed.
-- **Branch protection:** main is currently unprotected; configure and verify the seven now-observed job contexts before merge.
+- **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
 
@@ -85,7 +85,7 @@
 
 ### Next priorities
 
-- **P0:** configure/verify branch protection, resolve any late review, merge PR #1, deploy and smoke-test Production, then replace the remaining Production/status placeholders.
+- **P0:** resolve any late review, mark PR #1 ready, merge through protection, confirm the Git-connected main deployment uses the merged commit, and record the final merge/deployment identity.
 - **P1:** implement and verify the Supabase non-AI data path, server exports/evidence commands and real invitation redemption in an isolated preview environment.
 - **P2:** implement a real TERRAST connector only after an approved interface-control document and sandbox credentials exist; complete enterprise security/governance/operations.
 

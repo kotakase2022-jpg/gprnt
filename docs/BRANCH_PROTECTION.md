@@ -2,7 +2,7 @@
 
 ## Current state
 
-The repository is currently unprotected. Configure the policy only after the first PR exposes the exact check contexts, then verify the API/UI state and record it in `AI_HANDOFF.md`.
+Active and API-verified on 2026-07-12 for `main`. Protection requires a PR for administrators, strict status checks, conversation resolution, and stale-review dismissal; force pushes and deletion are blocked. Required approvals are zero and Code Owner review is off only because the repository has one maintainer. Raise both when an independent maintainer is added.
 
 Target branch: `main`
 Repository: `kotakase2022-jpg/gprnt`
