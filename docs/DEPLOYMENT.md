@@ -2,7 +2,7 @@
 
 ## Current external status
 
-The Vercel project `terrast-disclosure-hub` has been created in scope `kotakase2022-jpgs-projects`, linked to this workspace, and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Development, Preview, and Production. Exact deployment URLs and smoke-test evidence are recorded after the branch and `main` deployments complete.
+The Vercel project `terrast-disclosure-hub` has been created in scope `kotakase2022-jpgs-projects`, linked to this workspace, and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Development, Preview, and Production. PR #1 has a public, verified Preview at `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`; Vercel SSO deployment protection was disabled so external reviewers can reach the synthetic demo.
 
 No remote Supabase project was created or linked. The Vercel deployment intentionally runs the synthetic, deterministic Demo Mode and contains no customer data or server secrets.
 
@@ -126,4 +126,4 @@ After promotion, verify the public URL from a clean browser session and record P
 
 ## 7. Exact incomplete reason
 
-At this revision, Vercel project creation, repository connection, and non-secret Demo Mode environment configuration are complete. Preview and Production remain incomplete until their exact deployments and browser smoke tests are recorded. Supabase-backed production mode remains incomplete because no remote Supabase project or approved credentials were supplied, and the non-AI `SupabaseRepository` schema adapter/server commands are intentionally fail-closed. Configuration files alone are not treated as deployment evidence.
+At this revision, Vercel project creation, repository connection, non-secret Demo Mode environment configuration, public Preview deployment and browser verification are complete. The same remote Playwright suite passed 3/3, the custom 404 rendered, and the application emitted no captured console/page errors. Production remains incomplete until PR #1 is merged to `main` and its exact deployment is smoke-tested. Supabase-backed production mode remains incomplete because no remote Supabase project or approved credentials were supplied, and the non-AI `SupabaseRepository` schema adapter/server commands are intentionally fail-closed. Configuration files alone are not treated as deployment evidence.

@@ -1,6 +1,6 @@
 # 100-point self-evaluation and autonomous improvement record
 
-Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readiness certification. URLs and external CI evidence are updated after release.
+Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readiness certification. Preview and CI are verified; the score is finalized after Production.
 
 ## Current score: 86 / 100
 
@@ -12,7 +12,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 | 開示・Scope 3・移行計画機能    | 14 / 15 | Disclosure, all 15 Scope 3 categories, supplier response, transition actions, AI drafting and report output form one navigable workflow. Deduction: disclosure taxonomy summaries and DEMO factors require licensed/approved production sources.                               |
 | 信頼性・セキュリティ・監査性   |  8 / 10 | Route/action RBAC, company isolation, consent filtering, append-only audit patterns, private evidence storage, atomic AI provenance RPC and correlation IDs are implemented. Deduction: remote RLS/Storage pgTAP and the general Supabase adapter are not executed end to end. |
 | UI／UX・デモ品質               |   4 / 5 | Original Japanese capital-markets UI, desktop/tablet E2E, keyboard skip links, labels, role-aware navigation and exact concept disclaimer across major screens. Deduction: no formal accessibility audit or moderated usability test.                                          |
-| エンジニアリング・デプロイ品質 |   4 / 5 | Strict TypeScript, CI jobs, hooks, 70 unit tests, 3 Playwright tests, 71.47% statement coverage, production build, docs and Vercel project setup. Deduction: external PR CI, CodeRabbit review and deployed URL verification are pending at this revision.                     |
+| エンジニアリング・デプロイ品質 |   4 / 5 | Strict TypeScript, all seven CI jobs, hooks, 70 unit tests, remote Playwright 3/3, 71.47% statement coverage, public Preview and docs are verified. Deduction: branch protection, independent bot review and Production verification remain at this revision.                  |
 
 ## Evidence index
 
@@ -21,7 +21,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 - Tests: `src/**/*.test.*`, `e2e/critical-flow.spec.ts`, `scripts/check-supabase.mjs`, `.github/workflows/ci.yml`.
 - Documents: `docs/ARCHITECTURE.md`, `docs/TERRAST_INTEGRATION.md`, `docs/SECURITY.md`, `docs/JPX_PARTNERSHIP_DEMO.md`.
 - Local result: `npm run check` passed; 19 files / 70 tests passed; Playwright 3/3 passed; coverage statements 71.47%, branches 69.30%, functions 66.28%, lines 72.30%; 21 routes built.
-- URLs: Preview, Production and PR are pending at this revision and must replace this sentence after verification.
+- URLs: [Preview](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app) and [PR #1](https://github.com/kotakase2022-jpg/gprnt/pull/1) are verified; Production is pending the protected `main` merge.
 
 ## Autonomous improvement cycles
 
@@ -39,7 +39,7 @@ Prioritized reliability/security: implemented fail-closed runtime mode, Supabase
 
 ### Cycle 3 — workflow invariants and release proof
 
-Locked editing after review/approval, constrained submit/revision/approval/cancel and supplier transitions by role and state, made sync persistence precede visible state, added AI error correlation IDs, and expanded E2E assertions for approval lock, tenant isolation and denied deep links. `npm run check`, coverage and Playwright all passed. External CI/review/deployment evidence is the remaining release step; the three-cycle limit is now reached.
+Locked editing after review/approval, constrained submit/revision/approval/cancel and supplier transitions by role and state, made sync persistence precede visible state, added AI error correlation IDs, and expanded E2E assertions for approval lock, tenant isolation and denied deep links. `npm run check`, coverage and Playwright all passed. All seven GitHub CI jobs passed, and the public Preview passed the same remote Playwright 3/3 plus 404/browser-console checks. Review, branch protection and Production are the remaining release steps; the three-cycle limit is now reached.
 
 ## Honest production gaps
 

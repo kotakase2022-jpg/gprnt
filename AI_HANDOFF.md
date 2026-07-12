@@ -3,10 +3,10 @@
 ## Cycle 3 — audited release candidate
 
 - **Current branch:** `agent/terrast-disclosure-hub-mvp`
-- **Target PR:** pending creation against `main`
+- **Target PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) against `main`
 - **Cycle number:** 3 (derived from the initial implementation and two recorded improvement passes; the three-cycle autonomous-improvement limit is reached)
-- **Status:** local release candidate is green; external PR/CI/review/deployment evidence is pending
-- **Evaluation:** 86 / 100 before external CI and URL verification; see `docs/SELF_EVALUATION.md`
+- **Status:** local and GitHub CI are green; public Preview is verified; review/branch protection/main Production remain
+- **Evaluation:** 86 / 100 before protected main merge and Production verification; see `docs/SELF_EVALUATION.md`
 
 ### Improvement history
 
@@ -53,6 +53,7 @@
 - `npm run check`: passed — Prettier, ESLint with zero warnings, TypeScript strict, 19 files / 70 unit tests, Supabase static checks, Next.js production build.
 - `npm run test:coverage`: passed — statements 71.47%, branches 69.30%, functions 66.28%, lines 72.30%; domain statements 88.03%.
 - `npm run test:e2e`: passed — 3/3 Chromium tests. Golden scenario covers login, company selection, sync preview/apply/conflict, missing input, AI draft, submit, revision, edit, resubmit, approval, approved edit lock, report, operator reflection; additional tests cover tablet layout, company isolation and denied role deep links.
+- `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app npm run test:e2e`: passed — the same 3/3 tests against the public Vercel Preview, with no captured console/page errors.
 - `npm run agents:check`: passed — `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - Build output: 21 routes including dynamic `/api/ai/disclosure`.
 - `npm audit`: two moderate transitive advisories from Next.js's bundled PostCSS remain; npm's suggested force fix is a destructive Next.js downgrade and was not applied.
@@ -60,18 +61,19 @@
 ### Deployment / external state
 
 - **Vercel Production URL:** pending main deployment and browser verification
-- **Vercel Preview URL:** pending feature-branch deployment and browser verification
-- **GitHub PR URL:** pending creation
+- **Vercel Preview URL:** https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app — READY; landing, demo, golden E2E, tablet, tenant/RBAC checks and custom 404 verified
+- **GitHub PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
-- **Branch protection:** main is currently unprotected; configure and verify the seven exact job contexts after the PR emits them.
+- **GitHub CI:** all seven required jobs passed on commit `8447c96`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed.
+- **Branch protection:** main is currently unprotected; configure and verify the seven now-observed job contexts before merge.
 
 ### External review status
 
 - Independent Codex subagents performed security/workflow and release-document audits. All demo-release P1 code findings were fixed or converted to explicit, fail-closed production gates.
 - Claude Code CLI `2.1.207` was invoked after reading the shared rules, but independent review could not run because the CLI returned `Not logged in · Please run /login`. Do not claim Claude review completed.
-- CodeRabbit: pending PR creation. Review threads must be checked before merge; unresolved findings require a fix or a recorded reason.
-- Cursor Bugbot: not used. Use only if CodeRabbit provides insufficient review, per project rules.
+- CodeRabbit: no review or comment was received on PR #1 after CI completed, so it supplied no actionable review.
+- Cursor Bugbot: not manually invoked. Its installed GitHub check automatically attempted to run after CodeRabbit produced no review, but finished neutral with `usage limit reached`; no findings were produced.
 
 ### Unresolved items
 
@@ -83,7 +85,7 @@
 
 ### Next priorities
 
-- **P0:** create/push the PR, deploy and smoke-test Preview, pass external CI, inspect CodeRabbit, configure/verify branch protection, merge, deploy and smoke-test Production, then replace all pending URLs/statuses.
+- **P0:** configure/verify branch protection, resolve any late review, merge PR #1, deploy and smoke-test Production, then replace the remaining Production/status placeholders.
 - **P1:** implement and verify the Supabase non-AI data path, server exports/evidence commands and real invitation redemption in an isolated preview environment.
 - **P2:** implement a real TERRAST connector only after an approved interface-control document and sandbox credentials exist; complete enterprise security/governance/operations.
 
