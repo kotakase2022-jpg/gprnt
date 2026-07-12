@@ -1,11 +1,12 @@
 # AI Handoff
 
-## Cycle 3 — audited release candidate
+## Cycle 3 — audited release complete
 
-- **Current branch:** `agent/terrast-disclosure-hub-mvp`
-- **Target PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) against `main`
+- **Current branch:** `agent/release-evidence`
+- **Target PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) — release-evidence-only follow-up against `main`
+- **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
 - **Cycle number:** 3 (derived from the initial implementation and two recorded improvement passes; the three-cycle autonomous-improvement limit is reached)
-- **Status:** local/CI/Preview/Production are green and main protection is active; protected PR merge and main deployment reconciliation remain
+- **Status:** MVP release complete — protected main merge, Git-connected Production, public Preview, CI and browser verification are green
 - **Evaluation:** 87 / 100; see `docs/SELF_EVALUATION.md`
 
 ### Improvement history
@@ -60,20 +61,21 @@
 
 ### Deployment / external state
 
-- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — READY; remote Playwright 3/3, custom 404 and clean browser errors verified on deployment `dpl_Gq8BCey1zQzWkzcjbovjmmTjTD7c`; reconcile with the main-triggered deployment after merge
+- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — READY on Git-connected deployment `dpl_717sJtSrQL2ZCEJPMLi9AQj8CxJD`; Vercel API verified `githubCommitRef=main` and `githubCommitSha=5f22374e2cc742c562b7a6ad1b9674a60f7b8297`; remote Playwright 3/3, custom 404 and clean browser errors passed after the alias moved to this deployment
 - **Vercel Preview URL:** https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app — READY; landing, demo, golden E2E, tablet, tenant/RBAC checks and custom 404 verified
-- **GitHub PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1
+- **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
+- **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
-- **GitHub CI:** all seven required jobs passed on commit `8447c96`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed.
+- **GitHub CI:** all seven required jobs passed on the final PR head `dbd5c52`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel checks also passed before squash merge.
 - **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
 
 - Independent Codex subagents performed security/workflow and release-document audits. All demo-release P1 code findings were fixed or converted to explicit, fail-closed production gates.
 - Claude Code CLI `2.1.207` was invoked after reading the shared rules, but independent review could not run because the CLI returned `Not logged in · Please run /login`. Do not claim Claude review completed.
-- CodeRabbit: no review or comment was received on PR #1 after CI completed, so it supplied no actionable review.
-- Cursor Bugbot: not manually invoked. Its installed GitHub check automatically attempted to run after CodeRabbit produced no review, but finished neutral with `usage limit reached`; no findings were produced.
+- CodeRabbit: `@coderabbitai review` was requested and the PR was moved from Draft to Ready, but no review/comment arrived, so it supplied no actionable review.
+- Cursor Bugbot: not manually invoked. Its installed GitHub integration automatically added a high-risk overview but no actionable inline finding; its comment also reported `usage limit reached`.
 
 ### Unresolved items
 
@@ -85,8 +87,8 @@
 
 ### Next priorities
 
-- **P0:** resolve any late review, mark PR #1 ready, merge through protection, confirm the Git-connected main deployment uses the merged commit, and record the final merge/deployment identity.
-- **P1:** implement and verify the Supabase non-AI data path, server exports/evidence commands and real invitation redemption in an isolated preview environment.
+- **P0:** for any real-data pilot, implement the Supabase non-AI schema adapter and audited server commands, then execute remote migration/RLS/Storage/pgTAP verification. The synthetic Demo Mode release itself has no remaining P0.
+- **P1:** implement server exports/evidence commands and real invitation redemption in an isolated preview environment.
 - **P2:** implement a real TERRAST connector only after an approved interface-control document and sandbox credentials exist; complete enterprise security/governance/operations.
 
 ### Claude Code review focus
@@ -98,4 +100,4 @@
 
 ### Concrete prompt for the next AI
 
-> Read `AGENTS.md`, `CLAUDE.md`, `AI_HANDOFF.md` and `docs/SELF_EVALUATION.md` first. Preserve existing changes. Inspect the PR, all seven GitHub checks, CodeRabbit threads and exact Vercel deployment commit. Fix actionable findings, rerun `npm run check`, `npm run test:e2e`, `npm run agents:check`, then verify landing, demo login, the golden workflow, 404 and browser console on both Preview and Production. Record exact URLs, commits, CI/review/branch-protection state and honest residuals in README, Deployment, Self Evaluation and this handoff. Do not enable Supabase or TERRAST API mode or imply JPX approval without authorized external contracts.
+> Read `AGENTS.md`, `CLAUDE.md`, `AI_HANDOFF.md` and `docs/SELF_EVALUATION.md` first. Preserve the verified Demo Mode release. Start the next production-readiness PR with the non-AI `SupabaseRepository` schema adapter and audited server commands in an isolated Supabase project; apply the migration, run positive/negative RLS and Storage pgTAP tests, and record advisor output. Do not enable TERRAST API mode or imply JPX approval without authorized contracts. Rerun all seven CI jobs and the remote golden E2E before changing the Production alias.

@@ -21,7 +21,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 - Tests: `src/**/*.test.*`, `e2e/critical-flow.spec.ts`, `scripts/check-supabase.mjs`, `.github/workflows/ci.yml`.
 - Documents: `docs/ARCHITECTURE.md`, `docs/TERRAST_INTEGRATION.md`, `docs/SECURITY.md`, `docs/JPX_PARTNERSHIP_DEMO.md`.
 - Local result: `npm run check` passed; 19 files / 70 tests passed; Playwright 3/3 passed; coverage statements 71.47%, branches 69.30%, functions 66.28%, lines 72.30%; 21 routes built.
-- URLs: [Production](https://terrast-disclosure-hub.vercel.app), [Preview](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app) and [PR #1](https://github.com/kotakase2022-jpg/gprnt/pull/1) are verified. Production passed remote Playwright 3/3 and must be reconciled to the main-triggered deployment after merge.
+- URLs: [Production](https://terrast-disclosure-hub.vercel.app), [Preview](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app) and merged [PR #1](https://github.com/kotakase2022-jpg/gprnt/pull/1) are verified. Production deployment `dpl_717sJtSrQL2ZCEJPMLi9AQj8CxJD` is linked to `main` commit `5f22374` and passed the final remote Playwright 3/3.
 
 ## Autonomous improvement cycles
 
@@ -39,7 +39,7 @@ Prioritized reliability/security: implemented fail-closed runtime mode, Supabase
 
 ### Cycle 3 — workflow invariants and release proof
 
-Locked editing after review/approval, constrained submit/revision/approval/cancel and supplier transitions by role and state, made sync persistence precede visible state, added AI error correlation IDs, and expanded E2E assertions for approval lock, tenant isolation and denied deep links. `npm run check`, coverage and Playwright all passed. All seven GitHub CI jobs passed; public Preview and Production each passed remote Playwright 3/3 plus 404/browser-console checks; main protection is active. Protected merge/reconciliation is the remaining release step, and the three-cycle limit is reached.
+Locked editing after review/approval, constrained submit/revision/approval/cancel and supplier transitions by role and state, made sync persistence precede visible state, added AI error correlation IDs, and expanded E2E assertions for approval lock, tenant isolation and denied deep links. `npm run check`, coverage and Playwright all passed. All seven GitHub CI jobs passed; public Preview and main-linked Production each passed remote Playwright 3/3 plus 404/browser-console checks; main protection is active and PR #1 is merged. The synthetic Demo Mode release is complete, and the three-cycle limit is reached.
 
 ## Honest production gaps
 
