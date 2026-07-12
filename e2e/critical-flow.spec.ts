@@ -11,6 +11,13 @@ async function expectFixedJpxDisclaimerAbsent(page: Page) {
   }
 }
 
+async function openRoleSwitcher(page: Page, currentRole: RegExp) {
+  const trigger = page.getByRole("button", { name: currentRole });
+  await trigger.focus();
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Enter");
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     if (window.sessionStorage.getItem("terrast-e2e-cleared")) return;
@@ -94,14 +101,14 @@ test("company workflow reaches operator aggregate without runtime errors", async
   await page.getByRole("button", { name: "レビューへ提出" }).click();
   await expect(page.getByText("Reviewerへ提出しました")).toBeVisible();
 
-  await page.getByRole("button", { name: /企業管理者/ }).click();
+  await openRoleSwitcher(page, /企業管理者/);
   await page.getByTestId("role-switch-reviewer_approver").click();
   await page.getByRole("link", { name: "レビュー・承認" }).click();
   await page.getByRole("button", { name: "差戻し" }).click();
   await page.getByRole("button", { name: "差戻しを確定" }).click();
   await expect(page.getByText("作成者へ差戻しました")).toBeVisible();
 
-  await page.getByRole("button", { name: /レビュー・承認者/ }).click();
+  await openRoleSwitcher(page, /レビュー・承認者/);
   await page.getByTestId("role-switch-preparer").click();
   await page.getByRole("link", { name: "SSBJ / ISSB開示" }).click();
   await page.getByRole("tab", { name: "開示案" }).click();
@@ -111,13 +118,13 @@ test("company workflow reaches operator aggregate without runtime errors", async
   );
   await page.getByRole("button", { name: "保存", exact: true }).click();
   await page.getByRole("button", { name: "レビューへ提出" }).click();
-  await page.getByRole("button", { name: /作成者/ }).click();
+  await openRoleSwitcher(page, /作成者/);
   await page.getByTestId("role-switch-reviewer_approver").click();
   await page.getByRole("link", { name: "レビュー・承認" }).click();
   await page.getByRole("button", { name: "承認", exact: true }).click();
   await expect(page.getByText("開示案を承認しました")).toBeVisible();
 
-  await page.getByRole("button", { name: /レビュー・承認者/ }).click();
+  await openRoleSwitcher(page, /レビュー・承認者/);
   await page.getByTestId("role-switch-preparer").click();
   await page.getByRole("link", { name: "SSBJ / ISSB開示" }).click();
   await page.getByRole("tab", { name: "開示案" }).click();
@@ -126,7 +133,7 @@ test("company workflow reaches operator aggregate without runtime errors", async
     page.getByRole("button", { name: "保存", exact: true }),
   ).toBeDisabled();
 
-  await page.getByRole("button", { name: /作成者/ }).click();
+  await openRoleSwitcher(page, /作成者/);
   await page.getByTestId("role-switch-reviewer_approver").click();
   await page.getByRole("link", { name: "レポート" }).click();
   await expect(
@@ -138,7 +145,7 @@ test("company workflow reaches operator aggregate without runtime errors", async
     page.getByText("法的適合性や保証を示すレポートではありません。"),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: /レビュー・承認者/ }).click();
+  await openRoleSwitcher(page, /レビュー・承認者/);
   await page.getByTestId("role-switch-platform_operator_demo_admin").click();
   await expect(page).toHaveURL(/\/app\/operator/);
   await expect(
@@ -194,7 +201,7 @@ test("company state is isolated and role deep links are denied", async ({
   await page.getByRole("option", { name: "ネクストリテール株式会社" }).click();
   await expect(page.getByText("TENANT-ONLY-METRIC")).toHaveCount(0);
 
-  await page.getByRole("button", { name: /システム管理者/ }).click();
+  await openRoleSwitcher(page, /システム管理者/);
   await page.getByTestId("role-switch-supplier_user").click();
   await expect(page).toHaveURL(/\/app\/suppliers/);
   await expect(
