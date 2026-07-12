@@ -1,0 +1,7 @@
+# Replace or extend owners when the repository team structure is confirmed.
+* @kotakase2022-jpg
+
+# Security-sensitive changes require the repository owner until dedicated teams exist.
+/supabase/ @kotakase2022-jpg
+/.github/ @kotakase2022-jpg
+/.env.example @kotakase2022-jpg

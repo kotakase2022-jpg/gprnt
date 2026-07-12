@@ -1,0 +1,848 @@
+openapi: 3.1.0
+info:
+  title: TERRAST Sustainability Disclosure Hub Application API
+  version: 0.1.0-concept
+  summary: Internal application command/query contract for the concept MVP
+  description: |
+    Design contract for server-side application endpoints. It is not a TERRAST API
+    specification and does not assert that these routes are deployed. The production
+    TERRAST endpoint, authentication, and payload contract are unknown; no external
+    TERRAST path appears in this document. Implementations must authenticate, enforce
+    tenant membership/consent server-side, validate with Zod, and preserve RLS.
+  contact:
+    name: Repository maintainers
+servers:
+  - url: http://localhost:3000
+    description: Local development only
+tags:
+  - name: System
+  - name: Sync
+  - name: AI
+  - name: Evidence
+  - name: Reports
+security:
+  - sessionCookie: []
+  - bearerAuth: []
+paths:
+  /api/v1/health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Return application readiness without secret/provider details
+      security: []
+      x-implementation-status: design-contract
+      responses:
+        "200":
+          description: Process is ready to receive requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/sync/preview:
+    post:
+      tags: [Sync]
+      operationId: previewSync
+      summary: Create a dry-run TERRAST connector diff
+      description: |
+        Uses the configured connector. In this MVP the supported default is mock;
+        API mode fails closed until an authorized contract is supplied.
+      x-implementation-status: design-contract
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncPreviewRequest"
+      responses:
+        "201":
+          description: Dry-run preview created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncJob"
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblem"
+        "403":
+          $ref: "#/components/responses/ForbiddenProblem"
+        "409":
+          $ref: "#/components/responses/ConflictProblem"
+        "429":
+          $ref: "#/components/responses/RateLimitedProblem"
+  /api/v1/sync/jobs/{jobId}:
+    get:
+      tags: [Sync]
+      operationId: getSyncJob
+      summary: Read a tenant-owned sync job and its safe result
+      x-implementation-status: design-contract
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      responses:
+        "200":
+          description: Job visible to the current tenant member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncJob"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblem"
+        "403":
+          $ref: "#/components/responses/ForbiddenProblem"
+        "404":
+          $ref: "#/components/responses/NotFoundProblem"
+  /api/v1/sync/jobs/{jobId}/apply:
+    post:
+      tags: [Sync]
+      operationId: applySyncJob
+      summary: Apply selected preview records and explicit conflict resolutions
+      description: |
+        Re-authorizes the caller, rejects stale previews, and transactionally applies
+        selected records. Manual resolutions require a reason. Replays with the same
+        idempotency key return the same logical outcome.
+      x-implementation-status: design-contract
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncApplyRequest"
+      responses:
+        "200":
+          description: Existing idempotent result returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncApplyResult"
+        "201":
+          description: Selected records applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncApplyResult"
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblem"
+        "403":
+          $ref: "#/components/responses/ForbiddenProblem"
+        "404":
+          $ref: "#/components/responses/NotFoundProblem"
+        "409":
+          $ref: "#/components/responses/ConflictProblem"
+  /api/ai/disclosure:
+    post:
+      tags: [AI]
+      operationId: generateDisclosureDraft
+      summary: Generate a structured, evidence-linked disclosure proposal
+      description: |
+        Server-side only. Returns insufficient_evidence instead of unsupported facts.
+        Every successful draft remains an AI proposal requiring human review. The
+        x-demo-role header is accepted only while explicit demo mode is enabled.
+      x-implementation-status: implemented
+      security:
+        - bearerAuth: []
+        - demoRole: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiDraftRequest"
+      responses:
+        "200":
+          description: Validated AI or deterministic-demo result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiDraftResponse"
+        "400":
+          description: Request body failed strict validation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "401":
+          description: Missing/invalid identity or disallowed role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "403":
+          description: The authenticated principal cannot access one or more requested sources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "429":
+          description: In-process demo request budget exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "503":
+          description: Authentication, source access, server configuration, or atomic audit persistence is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "502":
+          description: Provider generation/validation failed; deterministic fallback is available
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [error, correlationId, fallbackAvailable]
+                properties:
+                  error:
+                    type: string
+                    const: ai_generation_failed
+                  correlationId:
+                    type: string
+                  fallbackAvailable:
+                    type: boolean
+                    const: true
+  /api/v1/evidence/{evidenceId}/signed-url:
+    post:
+      tags: [Evidence]
+      operationId: createEvidenceSignedUrl
+      summary: Create a short-lived URL after tenant/entity authorization
+      x-implementation-status: design-contract
+      parameters:
+        - name: evidenceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                disposition:
+                  type: string
+                  enum: [inline, attachment]
+                  default: inline
+      responses:
+        "200":
+          description: Ephemeral URL; clients must not persist or log it
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: Must prevent shared/public caching
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignedUrlResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblem"
+        "403":
+          $ref: "#/components/responses/ForbiddenProblem"
+        "404":
+          $ref: "#/components/responses/NotFoundProblem"
+  /api/v1/reports/exports:
+    post:
+      tags: [Reports]
+      operationId: createReportExport
+      summary: Produce a bounded tenant-authorized CSV or JSON export
+      description: Browser print-to-PDF is handled by the report page, not this endpoint.
+      x-implementation-status: design-contract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportRequest"
+      responses:
+        "200":
+          description: Bounded export payload
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "401":
+          $ref: "#/components/responses/UnauthorizedProblem"
+        "403":
+          $ref: "#/components/responses/ForbiddenProblem"
+        "429":
+          $ref: "#/components/responses/RateLimitedProblem"
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Illustrative session name; implementation must use its configured secure cookie contract.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    demoRole:
+      type: apiKey
+      in: header
+      name: x-demo-role
+      description: Explicit demo-mode identity only; never a production authorization mechanism.
+  parameters:
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Unique within the authenticated organization for one logical command.
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+        pattern: "^[A-Za-z0-9._:-]+$"
+  responses:
+    ValidationProblem:
+      description: Request validation failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    UnauthorizedProblem:
+      description: Authentication is missing or expired
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    ForbiddenProblem:
+      description: Authenticated principal lacks tenant/resource permission
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFoundProblem:
+      description: Resource is not visible or does not exist
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    ConflictProblem:
+      description: Idempotency mismatch, stale preview, or unresolved conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    RateLimitedProblem:
+      description: Request budget exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, demoMode]
+      properties:
+        status:
+          type: string
+          enum: [ready]
+        demoMode:
+          type: boolean
+    SyncPreviewRequest:
+      type: object
+      additionalProperties: false
+      required: [organizationId, companyId, reportingPeriodId, connectorMode]
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        reportingPeriodId:
+          type: string
+          format: uuid
+        connectorMode:
+          type: string
+          enum: [mock, api, csv, json]
+        requestedMetricCodes:
+          type: array
+          maxItems: 200
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+    SyncRecord:
+      type: object
+      additionalProperties: false
+      required: [id, sourceRecordId, changeType, provenance]
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceRecordId:
+          type: string
+        metricCode:
+          type: string
+        changeType:
+          type: string
+          enum: [added, updated, conflict, unchanged, invalid]
+        beforeValue: {}
+        incomingValue: {}
+        validationIssues:
+          type: array
+          items:
+            type: string
+        provenance:
+          $ref: "#/components/schemas/Provenance"
+    SyncJob:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          organizationId,
+          companyId,
+          connectorMode,
+          dryRun,
+          status,
+          records,
+          summary,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        connectorMode:
+          type: string
+          enum: [mock, api, csv, json]
+        dryRun:
+          type: boolean
+        status:
+          type: string
+          enum: [pending, running, preview_ready, completed, failed, cancelled]
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/SyncRecord"
+        summary:
+          $ref: "#/components/schemas/SyncSummary"
+        safeErrorCode:
+          type: [string, "null"]
+    SyncSummary:
+      type: object
+      additionalProperties: false
+      required: [added, updated, conflicts, unchanged, invalid]
+      properties:
+        added:
+          type: integer
+          minimum: 0
+        updated:
+          type: integer
+          minimum: 0
+        conflicts:
+          type: integer
+          minimum: 0
+        unchanged:
+          type: integer
+          minimum: 0
+        invalid:
+          type: integer
+          minimum: 0
+    SyncApplyRequest:
+      type: object
+      additionalProperties: false
+      required: [previewVersion, selections]
+      properties:
+        previewVersion:
+          type: string
+          minLength: 1
+        selections:
+          type: array
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required: [syncRecordId, selected]
+            properties:
+              syncRecordId:
+                type: string
+                format: uuid
+              selected:
+                type: boolean
+              resolution:
+                type: string
+                enum: [terrast, manual, skip]
+              resolutionReason:
+                type: string
+                minLength: 1
+                maxLength: 1000
+    SyncApplyResult:
+      type: object
+      additionalProperties: false
+      required: [jobId, appliedMetricValueIds, auditLogIds, summary]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        appliedMetricValueIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        auditLogIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        summary:
+          $ref: "#/components/schemas/SyncSummary"
+    Provenance:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          sourceType,
+          sourceSystem,
+          sourceRecordId,
+          retrievedAt,
+          reportingPeriod,
+          confidence,
+        ]
+      properties:
+        sourceType:
+          type: string
+          enum: [terrast_mock, terrast_api, file_import]
+        sourceSystem:
+          type: string
+        sourceRecordId:
+          type: string
+        retrievedAt:
+          type: string
+          format: date-time
+        reportingPeriod:
+          type: object
+          additionalProperties: false
+          required: [start, end]
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        unit:
+          type: string
+        confidence:
+          type: string
+          enum: [high, medium, low, unknown]
+    AiDraftRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          companyId,
+          requirementId,
+          requirementSummary,
+          sourceData,
+          evidenceIds,
+          requestedTasks,
+        ]
+      properties:
+        companyId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        requirementId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        requirementSummary:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        sourceData:
+          type: array
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/AiSourceDatum"
+        priorYearData:
+          type: array
+          default: []
+          maxItems: 50
+          items:
+            $ref: "#/components/schemas/AiSourceDatum"
+        evidenceIds:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+        requestedTasks:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+        priorYearText:
+          type: string
+          maxLength: 5000
+    AiSourceDatum:
+      type: object
+      additionalProperties: false
+      required: [id, label, value, unit, period, confidence]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 200
+        label:
+          type: string
+          minLength: 1
+          maxLength: 200
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+        unit:
+          type: string
+          maxLength: 40
+        period:
+          type: string
+          maxLength: 40
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        organizationalBoundary:
+          type: string
+          maxLength: 200
+    AiDraftResponse:
+      type: object
+      additionalProperties: false
+      required: [output, meta]
+      properties:
+        output:
+          $ref: "#/components/schemas/AiDisclosureOutput"
+        meta:
+          type: object
+          additionalProperties: false
+          required:
+            [promptVersion, inputHash, executedBy, executedAt, mode, model]
+          properties:
+            promptVersion:
+              type: string
+            inputHash:
+              type: string
+              pattern: "^[a-f0-9]{64}$"
+            executedBy:
+              type: string
+            executedAt:
+              type: string
+              format: date-time
+            mode:
+              type: string
+              enum: [demo, api]
+            model:
+              type: string
+    AiDisclosureOutput:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - label
+        - reviewRequired
+        - disclosureDraft
+        - missingQuestions
+        - inconsistencies
+        - climateCandidates
+        - transitionPlanDraft
+        - priorYearChanges
+        - weakEvidenceWarnings
+        - claims
+        - insufficientEvidence
+      properties:
+        status:
+          type: string
+          enum: [draft, insufficient_evidence]
+        label:
+          type: string
+          const: AI提案・要レビュー
+        reviewRequired:
+          type: boolean
+          const: true
+        disclosureDraft:
+          oneOf:
+            - $ref: "#/components/schemas/GroundedText"
+            - type: "null"
+        missingQuestions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [question, relatedRequirementId, requiredEvidence]
+            properties:
+              question: { type: string }
+              relatedRequirementId: { type: string }
+              requiredEvidence: { type: string }
+        inconsistencies:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        climateCandidates:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        transitionPlanDraft:
+          oneOf:
+            - $ref: "#/components/schemas/GroundedText"
+            - type: "null"
+        priorYearChanges:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        weakEvidenceWarnings:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        claims:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroundedText"
+        insufficientEvidence:
+          oneOf:
+            - type: object
+              additionalProperties: false
+              required: [reason, missingDataDescriptions]
+              properties:
+                reason: { type: string }
+                missingDataDescriptions:
+                  type: array
+                  minItems: 1
+                  items: { type: string }
+            - type: "null"
+    GroundedText:
+      type: object
+      additionalProperties: false
+      required: [text, evidenceDataIds]
+      properties:
+        text:
+          type: string
+        evidenceDataIds:
+          type: array
+          items:
+            type: string
+    SimpleError:
+      type: object
+      additionalProperties: false
+      required: [error, correlationId]
+      properties:
+        error:
+          type: string
+        correlationId:
+          type: string
+    SignedUrlResponse:
+      type: object
+      additionalProperties: false
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Sensitive ephemeral value; never persist or log.
+        expiresAt:
+          type: string
+          format: date-time
+    ExportRequest:
+      type: object
+      additionalProperties: false
+      required: [organizationId, companyId, reportType, format]
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        reportingPeriodId:
+          type: string
+          format: uuid
+        reportType:
+          type: string
+          enum:
+            [readiness, requirements, gaps, ghg, transition, provenance, audit]
+        format:
+          type: string
+          enum: [csv, json]
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, code, correlationId]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        code:
+          type: string
+        detail:
+          type: string
+          description: Safe client-facing detail only; no stack/provider/database text.
+        correlationId:
+          type: string
+        fieldIssues:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [path, message]
+            properties:
+              path:
+                type: string
+              message:
+                type: string
