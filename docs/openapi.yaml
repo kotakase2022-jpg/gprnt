@@ -17,6 +17,7 @@ servers:
 tags:
   - name: System
   - name: Sync
+  - name: Workspace
   - name: AI
   - name: Evidence
   - name: Reports
@@ -135,6 +136,88 @@ paths:
           $ref: "#/components/responses/NotFoundProblem"
         "409":
           $ref: "#/components/responses/ConflictProblem"
+  /api/workspace/metric-values:
+    post:
+      tags: [Workspace]
+      operationId: saveManualMetricValue
+      summary: Create or update one manual metric value with an atomic audit event
+      description: |
+        Implemented first Supabase production slice. The route validates a bearer
+        JWT, trusted app role, current database membership, company tenancy, open
+        reporting period, active metric, scalar type and unit through the caller's
+        RLS-scoped client before creating a server-secret client. A service-only,
+        SECURITY INVOKER RPC locks an active membership for the same effective role,
+        repeats the resource checks, enforces optimistic concurrency, and writes the
+        manual metric plus value/reason/scope/boundary hashes in one transaction. It applies
+        a shared actor-and-tenant limit of 30 successful writes per minute and returns
+        a safe saved-row payload from that same transaction. The route validates the
+        payload before returning it; no post-commit enrichment query is performed.
+        Roles are limited to system_admin, company_admin and preparer.
+        Code implementation does not imply remote migration or deployment evidence.
+      x-implementation-status: implemented
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: x-request-id
+          in: header
+          required: false
+          description: |
+            Optional safe correlation value. An absent or invalid value is replaced
+            by a server-generated UUID rather than reflected.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+            pattern: "^[A-Za-z0-9._:-]+$"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualMetricValueRequest"
+      responses:
+        "200":
+          description: Manual metric value and audit event committed atomically; authorized row returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualMetricValueResponse"
+        "400":
+          description: Strict input or database invariant validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "401":
+          description: Bearer token is missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "403":
+          description: Role, membership, tenant or resource authorization failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "409":
+          description: expectedVersion is stale
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "429":
+          description: Shared actor-and-tenant command limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
+        "503":
+          description: Authorization query, server secret, or RPC is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleError"
   /api/ai/disclosure:
     post:
       tags: [AI]
@@ -569,6 +652,242 @@ components:
         confidence:
           type: string
           enum: [high, medium, low, unknown]
+    ManualMetricValueRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          companyId,
+          reportingPeriodId,
+          metricCode,
+          value,
+          unit,
+          consolidationScope,
+          organizationalBoundary,
+          changeReason,
+          expectedVersion,
+        ]
+      properties:
+        companyId:
+          type: string
+          format: uuid
+        reportingPeriodId:
+          type: string
+          format: uuid
+        metricCode:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        value:
+          oneOf:
+            - type: number
+            - type: string
+              minLength: 1
+              maxLength: 10000
+            - type: boolean
+        unit:
+          $ref: "#/components/schemas/MetricUnit"
+        consolidationScope:
+          type: string
+          minLength: 1
+          maxLength: 200
+        organizationalBoundary:
+          type: string
+          minLength: 1
+          maxLength: 200
+        changeReason:
+          type: string
+          minLength: 3
+          maxLength: 500
+        expectedVersion:
+          type: integer
+          minimum: 0
+          description: Zero creates the logical manual row; updates require the exact current version.
+    ManualMetricValueResponse:
+      type: object
+      additionalProperties: false
+      required: [data, correlationId]
+      properties:
+        data:
+          $ref: "#/components/schemas/MetricValueDatabaseRow"
+        correlationId:
+          type: string
+          minLength: 1
+    MetricValueDatabaseRow:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          company_id,
+          metric_id,
+          reporting_period_id,
+          value_json,
+          original_value,
+          normalized_value,
+          unit,
+          original_unit,
+          consolidation_scope,
+          organizational_boundary,
+          source_type,
+          source_system,
+          source_record_id,
+          source_document,
+          imported_at,
+          last_updated_at,
+          confidence_level,
+          verification_status,
+          owner_user_id,
+          reviewer_user_id,
+          change_reason,
+          created_at,
+          manual_override,
+          version,
+          metrics,
+          reporting_periods,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        company_id: { type: string, format: uuid }
+        metric_id: { type: string, format: uuid }
+        reporting_period_id: { type: string, format: uuid }
+        value_json:
+          oneOf:
+            - type: number
+            - type: string
+            - type: boolean
+        original_value:
+          type: string
+        normalized_value:
+          oneOf:
+            - type: number
+            - type: string
+            - type: "null"
+        unit:
+          type: string
+          minLength: 1
+        original_unit:
+          type: string
+          minLength: 1
+        consolidation_scope:
+          type: string
+          minLength: 1
+        organizational_boundary:
+          type: string
+          minLength: 1
+        source_type: { type: string, minLength: 1 }
+        source_system: { type: string, minLength: 1 }
+        source_record_id:
+          type: string
+          minLength: 1
+        source_document:
+          type: [string, "null"]
+        imported_at:
+          type: string
+          format: date-time
+        last_updated_at: { type: string, format: date-time }
+        confidence_level:
+          type: string
+          enum: [unknown, low, medium, high]
+        verification_status:
+          type: string
+          enum: [unverified, internally_reviewed, externally_assured]
+        owner_user_id:
+          oneOf:
+            - type: string
+              format: uuid
+            - type: "null"
+        reviewer_user_id:
+          oneOf:
+            - type: string
+              format: uuid
+            - type: "null"
+        change_reason:
+          type: [string, "null"]
+        created_at: { type: string, format: date-time }
+        manual_override: { type: boolean }
+        version: { type: integer, minimum: 1 }
+        metrics:
+          oneOf:
+            - $ref: "#/components/schemas/MetricDefinitionDatabaseRelation"
+            - type: array
+              minItems: 1
+              maxItems: 1
+              items:
+                $ref: "#/components/schemas/MetricDefinitionDatabaseRelation"
+        reporting_periods:
+          oneOf:
+            - $ref: "#/components/schemas/ReportingPeriodDatabaseRelation"
+            - type: array
+              minItems: 1
+              maxItems: 1
+              items:
+                $ref: "#/components/schemas/ReportingPeriodDatabaseRelation"
+    MetricDefinitionDatabaseRelation:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          id,
+          metric_code,
+          name,
+          description,
+          category,
+          value_type,
+          canonical_unit,
+          allowed_units,
+          is_required,
+          is_sensitive,
+          terrast_field_key,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        metric_code: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+        category: { type: string, minLength: 1 }
+        value_type:
+          type: string
+          enum: [number, text, boolean]
+        canonical_unit:
+          type: [string, "null"]
+        allowed_units:
+          type: array
+          items: { type: string }
+        is_required: { type: boolean }
+        is_sensitive: { type: boolean }
+        terrast_field_key:
+          type: [string, "null"]
+    ReportingPeriodDatabaseRelation:
+      type: object
+      additionalProperties: false
+      required: [label]
+      properties:
+        label: { type: string, minLength: 1 }
+    MetricUnit:
+      type: string
+      enum:
+        [
+          tCO2e,
+          kgCO2e,
+          gCO2e,
+          MWh,
+          kWh,
+          GJ,
+          TJ,
+          m3,
+          L,
+          percent,
+          ratio,
+          people,
+          hours,
+          JPY,
+          million_JPY,
+          t,
+          kg,
+          unitless,
+        ]
     AiDraftRequest:
       type: object
       additionalProperties: false

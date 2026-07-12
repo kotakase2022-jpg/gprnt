@@ -68,7 +68,7 @@ export interface UserProfile {
   displayName: string;
   email: string;
   locale: "ja" | "en";
-  isSynthetic: true;
+  isSynthetic: boolean;
 }
 
 export interface Organization {
@@ -80,7 +80,7 @@ export interface Organization {
     | "company"
     | "assurance"
     | "supplier";
-  isSynthetic: true;
+  isSynthetic: boolean;
   createdAt: IsoDateTime;
 }
 
@@ -106,16 +106,16 @@ export interface Company {
   id: EntityId;
   organizationId: EntityId;
   companyCode: string;
-  securityCode: string;
+  securityCode: string | null;
   name: string;
-  nameEn: string;
+  nameEn: string | null;
   industry: Industry;
-  marketSegment: "demo_prime" | "demo_standard" | "demo_growth";
-  size: "large" | "medium" | "small";
+  marketSegment: "demo_prime" | "demo_standard" | "demo_growth" | null;
+  size: "large" | "medium" | "small" | null;
   fiscalYearEndMonth: number;
-  terrastExternalId: string;
+  terrastExternalId: string | null;
   sharingConsent: "none" | "aggregated_only" | "individual_consented";
-  isSynthetic: true;
+  isSynthetic: boolean;
 }
 
 export interface CompanySharingConsent {
@@ -183,6 +183,7 @@ export const UNITS = [
 export type Unit = (typeof UNITS)[number];
 
 export interface MetricDefinition {
+  id?: EntityId;
   code: string;
   name: string;
   description: string;
@@ -196,15 +197,23 @@ export interface MetricDefinition {
 }
 
 export type SourceType =
-  "terrast" | "manual" | "csv_import" | "json_import" | "calculation";
-export type ConfidenceLevel = "low" | "medium" | "high";
+  | "terrast"
+  | "manual"
+  | "csv_import"
+  | "json_import"
+  | "calculation"
+  | "supplier";
+export type ConfidenceLevel = "unknown" | "low" | "medium" | "high";
 export type VerificationStatus =
   "unverified" | "internally_reviewed" | "externally_assured";
 
 interface MetricValueBase {
   id: EntityId;
   companyId: EntityId;
+  metricId?: EntityId;
   metricCode: string;
+  metricName?: string;
+  metricCategory?: MetricCategory;
   reportingPeriodId: EntityId;
   reportingPeriod: string;
   unit: Unit;
@@ -355,7 +364,7 @@ export interface ReviewTask {
 export interface ReviewComment {
   id: EntityId;
   reviewTaskId: EntityId;
-  authorId: EntityId;
+  authorId: EntityId | null;
   body: string;
   mentionedUserIds: EntityId[];
   createdAt: IsoDateTime;

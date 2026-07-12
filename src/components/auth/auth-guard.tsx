@@ -40,7 +40,7 @@ async function clearLocalSession(client: SupabaseClient): Promise<void> {
 export function AppAuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const runtimeMode = getPublicRuntimeMode();
-  const { syncTrustedRole } = useDemoSession();
+  const { syncTrustedRole, syncTrustedCompanies } = useDemoSession();
   const [state, setState] = React.useState<GuardState>(() =>
     runtimeMode === "demo"
       ? { status: "authenticated", accessToken: null, email: null }
@@ -91,7 +91,28 @@ export function AppAuthGuard({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      const companies = await client
+        .from("companies")
+        .select("id, legal_name, company_code")
+        .order("legal_name");
+      if (
+        cancelled ||
+        currentRevision !== revision ||
+        companies.error ||
+        !companies.data
+      ) {
+        denyAccess();
+        return;
+      }
+
       syncTrustedRole(trustedRole);
+      syncTrustedCompanies(
+        companies.data.map((company) => ({
+          id: company.id as string,
+          name: company.legal_name as string,
+          code: company.company_code as string,
+        })),
+      );
       setState({
         status: "authenticated",
         accessToken: session.access_token,
@@ -129,7 +150,7 @@ export function AppAuthGuard({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
       pendingTimers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [router, runtimeMode, syncTrustedRole]);
+  }, [router, runtimeMode, syncTrustedCompanies, syncTrustedRole]);
 
   const signOut = React.useCallback(async () => {
     if (runtimeMode !== "supabase") return;

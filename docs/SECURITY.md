@@ -2,7 +2,7 @@
 
 ## 1. Scope and current posture
 
-This document covers the concept MVP and its productionization requirements. Controls in the migration are implemented; controls labeled **production gate** are not claimed as complete.
+This document covers the concept MVP and its productionization requirements. Controls described in the migrations and application code are implemented locally; they have not been applied or verified against a remote Supabase project. Controls labeled **production gate** are not claimed as complete.
 
 Primary assets are tenant sustainability data, evidence documents, supplier responses, user identity/roles, sharing consent, disclosure drafts/approvals, TERRAST connector credentials, OpenAI inputs/outputs, and audit/provenance history.
 
@@ -12,7 +12,7 @@ Primary threats include cross-tenant IDOR/BOLA, stale or forged role claims, ser
 
 - `organizations.tenant_id` is immutable. Child records use a foreign-key `organization_id` checked on every command.
 - Every table created in exposed `public` has RLS enabled and forced. `anon` has no application-table privileges.
-- Authenticated clients have no hard-delete table privilege. Connector jobs/records, calculations, AI provenance, and audit records are server-owned; append-only histories also revoke UPDATE. Retention/deletion/correction uses a validated privileged server workflow.
+- Authenticated clients have no hard-delete table privilege. The service role also has no DELETE privilege on application tables, except short-lived `supplier_invitation_secrets`, so it cannot erase history through parent cascades. Connector jobs/records, calculations, comments, AI provenance, and audit records are server-owned; append-only histories also revoke UPDATE. Administrative Auth-user deletion sets a review comment's author reference to null instead of cascading the comment. Retention/deletion/correction uses a separately reviewed privileged database workflow.
 - Current Supabase projects do not automatically expose new SQL-created tables. The migration explicitly grants only the needed authenticated CRUD surface, explicitly grants server-only service access, then narrows immutable/secret operations; RLS still governs every authenticated row.
 - Policies target `TO authenticated` and also check active membership/ownership. Authentication without ownership is never sufficient.
 - UPDATE has a SELECT policy and both `USING` (old row) and `WITH CHECK` (new row), preventing tenant reassignment.
@@ -30,9 +30,13 @@ JWT claims may remain stale until refresh. Role/consent changes therefore requir
 
 ## 4. Privileged database functions and service role
 
-The few recursion-breaking membership/consent/assignment lookups that need `SECURITY DEFINER` are in non-exposed `private`, validate `auth.uid()`, set an empty `search_path`, reference qualified objects, and receive exact grants; other helpers use `SECURITY INVOKER`. Do not add `private` to Data API exposed schemas. The public atomic AI-provenance RPC is `SECURITY INVOKER` and executable only by `service_role`; it needs no definer rights because that server credential already bypasses RLS.
+The few recursion-breaking membership/consent/assignment lookups that need `SECURITY DEFINER` are in non-exposed `private`, validate `auth.uid()`, set an empty `search_path`, reference qualified objects, and receive exact grants; other helpers use `SECURITY INVOKER`. Do not add `private` to Data API exposed schemas. The public atomic AI-provenance RPC and `save_manual_metric_value_with_audit` are `SECURITY INVOKER` and executable only by `service_role`; neither needs definer rights because that server credential already bypasses RLS.
 
-The Supabase service role/secret key bypasses RLS. It is permitted only in server-only modules after normal user authentication and explicit authorization. It may never appear in browser code, a `NEXT_PUBLIC_*` variable, telemetry, errors, screenshots, seed, or repository history. Prefer the user-scoped server client when RLS can perform the operation.
+The Supabase service role/secret key bypasses RLS. It is permitted only in server-only modules after normal user authentication and explicit authorization. New deployments prefer the independently rotatable `SUPABASE_SECRET_KEY`; `SUPABASE_SERVICE_ROLE_KEY` is a legacy compatibility fallback. Neither may appear in browser code, a `NEXT_PUBLIC_*` variable, telemetry, errors, screenshots, seed, or repository history. Prefer the user-scoped server client when RLS can perform the operation. Service-role hard deletion of application rows is revoked; invitation-hash rotation is the only current exception.
+
+For the implemented manual metric command, the route first validates the bearer token with `getUser`, reads the trusted `app_metadata` role, and uses the user-scoped RLS client to re-query an active membership for that exact role, company tenancy, open reporting period, active metric, value type, and allowed unit. The service client is created only after those checks. The route passes the effective role to the RPC, which locks and rechecks the same active role membership plus company, open period and active metric rows; a different membership cannot silently elevate or replace it. The RPC locks a canonical `manual:<metric UUID>` row, enforces optimistic `expectedVersion`, prevents overwrite of non-manual provenance, and appends value/reason/scope/boundary hashes in the same transaction. A transaction-scoped advisory lock enforces 30 successful writes per actor and organization per minute across app instances. The RPC returns a complete safe saved-row payload from that transaction, the route validates it, and the adapter performs no post-commit enrichment query; a later reread cannot turn a successful commit into an apparent failure.
+
+This is the only enabled non-AI privileged mutation. Every other non-AI repository mutation remains fail-closed.
 
 ## 5. Evidence Storage
 
@@ -49,7 +53,7 @@ Sharing consent records grantee organization, purpose, categories, effective dat
 
 Platform dashboards should query purpose-built aggregate/anonymous projections. Minimum cohort size, suppression of small cells, outlier handling, and re-identification review are **production gates**. A consented company summary never unlocks metric/evidence tables.
 
-The Demo Mode report screen performs local print/CSV/JSON downloads and neutralizes CSV formulas; it contains only synthetic data. Production exports require an authorized server command, visible classification/watermark, audit event, bounded time range, and safe CSV handling. Deletion must coordinate database rows, Storage objects, backups, legal hold, audit retention, and downstream copies. Exact retention/deletion SLAs remain unconfirmed.
+The Demo Mode report screen performs local print/CSV/JSON downloads and neutralizes CSV formulas; it contains only synthetic data. The Supabase `/app/data` screen does not expose its local CSV action. Production exports require an authorized server command, visible classification/watermark, audit event, bounded time range, and safe CSV handling. Deletion must coordinate database rows, Storage objects, backups, legal hold, audit retention, and downstream copies. Exact retention/deletion SLAs remain unconfirmed.
 
 ## 7. AI data governance
 
@@ -61,14 +65,14 @@ The Demo Mode report screen performs local print/CSV/JSON downloads and neutrali
 
 ## 8. Input, errors, rate limiting, and invitations
 
-- Zod validates the implemented AI route, import connectors, public Supabase configuration, and AI output; pure domain validators cover sync/calculation inputs. Future server actions must use the same boundary validation, with database checks as a second layer.
-- The implemented AI route returns a stable code and correlation ID for public errors. Future routes must follow the same contract and never return stack traces, SQL/provider errors, key material, internal object paths, or another tenant's identifiers.
-- Rate-limit by route risk, authenticated user, organization, and trusted network signal. Suggested starting point for low-risk demo APIs is 60 requests/minute, but AI, sync, export, login, invite, and signed-URL routes need lower dedicated budgets and concurrency caps. **Production gate:** distributed limiter/WAF, abuse dashboards, and tested fail behavior.
+- Zod validates the implemented AI route, manual metric command, import connectors, public Supabase configuration, schema adapter rows, and AI output; pure domain validators cover sync/calculation inputs. Future server actions must use the same boundary validation, with database checks as a second layer.
+- The implemented AI and manual metric routes return stable codes and correlation IDs for public errors. Future routes must follow the same contract and never return stack traces, SQL/provider errors, key material, internal object paths, or another tenant's identifiers.
+- The manual metric RPC implements a shared database limit of 30 successful writes per authenticated actor and organization per minute and returns stable HTTP 429 errors. Other routes still require limits by route risk, authenticated user, organization, and trusted network signal. **Production gate:** platform WAF/network abuse controls, dashboards, and tested fail behavior for AI, sync, export, login, invite, and signed-URL routes.
 - The migration provides a service-only `supplier_invitation_secrets` table for future high-entropy, single-purpose, expiring token hashes. The current synthetic demo link is presentation-only and does not authenticate a supplier. Before real use, bind token redemption to request/status/expiry and optional identity, rotate after acceptance/revocation, and rate-limit attempts.
 
 ## 9. Secrets and configuration
 
-Only `NEXT_PUBLIC_APP_NAME`, demo flag, Supabase URL, and Supabase publishable/legacy anon key are browser-visible. The service role, OpenAI key, and TERRAST key are server secrets managed separately for Development, Preview, and Production. Preview must not inherit production data credentials by default.
+Only `NEXT_PUBLIC_APP_NAME`, demo flag, Supabase URL, and Supabase publishable/legacy anon key are browser-visible. `SUPABASE_SECRET_KEY` (preferred), legacy `SUPABASE_SERVICE_ROLE_KEY`, OpenAI key, and TERRAST key are server secrets managed separately for Development, Preview, and Production. Preview must not inherit production data credentials by default.
 
 Use deployment-platform secret storage, least-privilege provider credentials, documented rotation/revocation, and secret scanning. `TERRAST_API_BASE_URL` must be HTTPS and allowlisted before API mode to mitigate SSRF. `.env*` with real values and local Supabase temp artifacts must remain ignored.
 
@@ -99,8 +103,12 @@ Client users cannot insert/update/delete `audit_logs`; validated server commands
 9. service-role server endpoints reject an authenticated but unauthorized user before data access;
 10. AI requests exclude unauthorized evidence and invalid outputs do not persist;
 11. audit/approval/sync/AI histories reject client mutation;
-12. secrets do not occur in browser bundles, errors, logs, or repository scans.
+12. manual metric create/update rejects stale version, wrong tenant/period/metric/type/unit/effective role/non-manual provenance, keeps one UUID-stable row across a metric-code rename, returns the strict mapper payload, and writes exactly one redacted matching audit event;
+13. Auth-user deletion preserves immutable review comments by nulling only the author reference;
+14. secrets do not occur in browser bundles, errors, logs, or repository scans.
+
+Unit/route tests and SQL pgTAP assertions for the first `/app/data` slice exist in the repository. The migrations, pgTAP suite, RLS/Storage negative tests, and database/security advisors have not been run against a remote Supabase project; this remains mandatory promotion evidence.
 
 ## 13. Supabase references reviewed
 
-The migration design was checked on 2026-07-12 against the current Supabase [Row Level Security guide](https://supabase.com/docs/guides/database/postgres/row-level-security), [Storage access-control guide](https://supabase.com/docs/guides/storage/security/access-control), [Storage ownership guide](https://supabase.com/docs/guides/storage/security/ownership), [custom claims/RBAC guide](https://supabase.com/docs/guides/api/custom-claims-and-role-based-access-control-rbac), and [breaking-change changelog](https://supabase.com/changelog?tags=breaking-change). Recheck them and run database advisors before production migration because Supabase behavior evolves.
+The migration design was checked on 2026-07-12 against the current Supabase [Row Level Security guide](https://supabase.com/docs/guides/database/postgres/row-level-security), [API key guide](https://supabase.com/docs/guides/getting-started/api-keys), [Data API security guide](https://supabase.com/docs/guides/api/securing-your-api), [Storage access-control guide](https://supabase.com/docs/guides/storage/security/access-control), [Storage ownership guide](https://supabase.com/docs/guides/storage/security/ownership), [custom claims/RBAC guide](https://supabase.com/docs/guides/api/custom-claims-and-role-based-access-control-rbac), and [breaking-change changelog](https://supabase.com/changelog?tags=breaking-change). The review accounts for explicit Data API grants on current projects and prefers current secret keys over legacy service-role JWTs. Recheck these sources and run database/security advisors before production migration because Supabase behavior evolves.

@@ -1,8 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
-const migrationPath =
-  "supabase/migrations/20260712100436_init_terrast_schema.sql";
-const migration = readFileSync(migrationPath, "utf8");
+const migrationDirectory = "supabase/migrations";
+const migrationFiles = readdirSync(migrationDirectory)
+  .filter((file) => file.endsWith(".sql"))
+  .sort();
+const migration = migrationFiles
+  .map((file) => readFileSync(`${migrationDirectory}/${file}`, "utf8"))
+  .join("\n");
 const seed = readFileSync("supabase/seed.sql", "utf8");
 
 const requiredTables = [
@@ -72,6 +76,19 @@ const requiredSecurityFragments = [
   "private.has_assigned_assurance_access(",
   "No authenticated DELETE policy is created",
   "public.append_ai_generation_with_audit",
+  "public.save_manual_metric_value_with_audit",
+  "metric_values_version_positive",
+  "metrics_metric_code_command_safe",
+  "membership.role = 'system_admin'::public.app_role",
+  "membership.role = v_actor_role",
+  "p_actor_role text",
+  "'metric_id', v_saved.metric_id",
+  "consolidation_scope_hash",
+  "change_reason_hash",
+  "review_comments_author_user_id_fkey",
+  "revoke delete on all tables in schema public from service_role",
+  "revoke update on\n  public.audit_logs",
+  "metric command rate limit exceeded",
 ];
 for (const fragment of requiredSecurityFragments) {
   assert(migration.includes(fragment), `Missing security control: ${fragment}`);
@@ -99,5 +116,5 @@ assert(
 );
 
 console.log(
-  `Supabase static checks passed: ${requiredTables.length}/${requiredTables.length} tables, RLS loop, server-owned workflows, Storage and synthetic seed guards.`,
+  `Supabase static checks passed: ${migrationFiles.length} migrations, ${requiredTables.length}/${requiredTables.length} tables, RLS loop, audited metric command, Storage and synthetic seed guards.`,
 );

@@ -51,8 +51,18 @@ test("company workflow reaches operator aggregate without runtime errors", async
   await page.getByLabel("指標名").fill("上流輸送の一次データ比率");
   await page.getByLabel("値").fill("46");
   await page.getByLabel("単位").fill("%");
+  await page.getByLabel("変更理由").fill("一次データの回収完了");
+  await page.getByLabel("連結範囲").fill("連結");
+  await page.getByLabel("組織境界").fill("国内外連結子会社");
   await page.getByRole("button", { name: "保存して来歴を記録" }).click();
   await expect(page.getByText("不足指標を登録しました")).toBeVisible();
+  const manualMetricRow = page.getByRole("row", {
+    name: /S3-CAT4-PRIMARY/,
+  });
+  await manualMetricRow.getByRole("button", { name: "来歴" }).click();
+  await expect(page.getByText("一次データの回収完了")).toBeVisible();
+  await expect(page.getByText("国内外連結子会社")).toBeVisible();
+  await page.keyboard.press("Escape");
 
   await page.getByRole("link", { name: "AI開示支援" }).click();
   await page
@@ -153,6 +163,9 @@ test("company state is isolated and role deep links are denied", async ({
   await page.getByLabel("指標名").fill("会社別分離テスト指標");
   await page.getByLabel("値").fill("77");
   await page.getByLabel("単位").fill("%");
+  await page.getByLabel("変更理由").fill("企業別分離の確認用");
+  await page.getByLabel("連結範囲").fill("連結");
+  await page.getByLabel("組織境界").fill("国内外連結子会社");
   await page.getByRole("button", { name: "保存して来歴を記録" }).click();
   await expect(page.getByText("TENANT-ONLY-METRIC")).toBeVisible();
 

@@ -51,7 +51,7 @@ export interface CompanyRepository {
 }
 
 export interface MetricRepository {
-  listMetrics(): Promise<MetricDefinition[]>;
+  listMetrics(organizationId?: string): Promise<MetricDefinition[]>;
   listMetricValues(query?: MetricValueQuery): Promise<MetricValue[]>;
   upsertMetricValue(value: MetricValue): Promise<MetricValue>;
 }

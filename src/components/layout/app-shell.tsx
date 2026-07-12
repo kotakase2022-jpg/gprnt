@@ -29,7 +29,6 @@ import { useAppAuth } from "@/components/auth/auth-guard";
 import { Brand } from "@/components/brand";
 import { ConceptNotice } from "@/components/concept-notice";
 import {
-  demoCompanies,
   demoRoles,
   type DemoRole,
   useDemoSession,
@@ -114,12 +113,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const auth = useAppAuth();
-  const { role, setRole, companyId, setCompanyId, resetDemo } =
+  const { role, setRole, companies, companyId, setCompanyId, resetDemo } =
     useDemoSession();
   const currentRole =
     demoRoles.find((item) => item.id === role) ?? demoRoles[2];
-  const currentCompany =
-    demoCompanies.find((item) => item.id === companyId) ?? demoCompanies[0];
+  const currentCompany = companies.find((item) => item.id === companyId);
 
   function changeRole(nextRole: DemoRole) {
     if (auth.mode !== "demo") return;
@@ -190,17 +188,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">
-              {currentCompany.name}
+              {currentCompany?.name ?? "対象企業を読み込み中"}
             </p>
             <p className="font-mono text-xs text-muted-foreground">
-              {currentCompany.code} · FY2025
+              {currentCompany
+                ? auth.mode === "demo"
+                  ? `${currentCompany.code} · FY2025`
+                  : currentCompany.code
+                : "—"}
             </p>
           </div>
 
           <Select
             value={companyId}
             onValueChange={setCompanyId}
-            disabled={role !== "system_admin"}
+            disabled={role !== "system_admin" || companies.length < 2}
           >
             <SelectTrigger
               className="hidden w-56 md:flex"
@@ -210,7 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {demoCompanies.map((company) => (
+              {companies.map((company) => (
                 <SelectItem key={company.id} value={company.id}>
                   {company.name}
                 </SelectItem>

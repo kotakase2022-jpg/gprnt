@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "server-only": path.resolve(__dirname, "./vitest.server-only.ts"),
     },
   },
   test: {
@@ -22,6 +23,7 @@ export default defineConfig({
         // `server-only` is a Next.js import guard rather than executable domain code;
         // Rolldown cannot remap it when collecting uncovered files in jsdom.
         "src/lib/terrast/server.ts",
+        "src/lib/supabase/server.ts",
       ],
     },
   },
