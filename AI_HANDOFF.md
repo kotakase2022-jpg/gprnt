@@ -4,6 +4,7 @@
 
 - **Branch:** `agent/remove-jpx-disclaimer`
 - **Target PR:** [#6](https://github.com/kotakase2022-jpg/gprnt/pull/6) — Draft from this branch to protected `main`
+- **Preview-verified head:** `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`
 - **Requested change:** remove the fixed JPX concept disclaimer from every rendered surface and repository copy.
 - **Positioning boundary retained:** product copy must not claim or imply formal JPX approval, endorsement, partnership, provision, or data provenance; synthetic-data labeling remains.
 - **Primary Production baseline before this change:** https://terrast-disclosure-hub-prod.vercel.app — project `terrast-disclosure-hub-prod`, deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC`, protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668`, READY, remote Playwright 3/3.
@@ -37,12 +38,14 @@
 - `npm run test:e2e`: passed — 3/3 Chromium tests covering the golden company workflow, tablet landing/login and tenant/deep-link isolation.
 - `npm run agents:check`: passed as part of `npm run check`; `AGENTS.md` and `CLAUDE.md` are byte-identical.
 - React review: no hook, state, event, accessibility or TypeScript behavior changed; only obsolete imports and render containers were removed.
-- **PR Preview:** 未実施 — branch has not yet been pushed.
+- **Required PR CI:** passed 7/7 on head `a098935` — `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; [Actions run 29201481173](https://github.com/kotakase2022-jpg/gprnt/actions/runs/29201481173). Both Vercel project status contexts and Preview Comments also passed on the same head.
+- **Primary PR Preview:** READY — project `terrast-disclosure-hub-prod`, deployment `dpl_D7vTtJLx1fTj66vPeBE491gdnQ6c`, commit `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`, unique URL `https://terrast-disclosure-hub-prod-ov53a5yqi.vercel.app`, branch alias `https://terrast-disclosure-hub-pr-git-3b79ed-kotakase2022-jpgs-projects.vercel.app`.
+- **Primary Preview runtime:** passed remote Playwright 3/3 after supplying a temporary Vercel Automation Bypass header. The tests verified absence on landing, demo login, authenticated app and report, retained `法的適合性や保証を示すレポートではありません。`, and zero collected console/page errors. The first unauthenticated attempt correctly reached Vercel Authentication rather than the app; both temporary bypass tokens created during diagnosis were revoked after verification.
 - **Post-merge Production:** 未実施 — merge and Git-connected Production redeploy are pending.
 
 ### Cycle 5 unresolved items and priorities
 
-- **P0:** create the PR, pass all required CI/Vercel checks, verify the primary Preview, merge through protected `main`, and verify `https://terrast-disclosure-hub-prod.vercel.app` no longer renders the fixed disclaimer.
+- **P0:** move PR #6 to Ready, request the configured reviews, merge through protected `main`, and verify `https://terrast-disclosure-hub-prod.vercel.app` serves the merged SHA without the fixed disclaimer.
 - **P1:** なし for this bounded copy-removal change. The existing unexecuted Supabase production gate remains documented under Cycle 4.
 - **P2:** monitor stakeholder/legal feedback on future positioning copy without restoring the removed fixed sentence unless explicitly requested.
 
@@ -50,8 +53,8 @@
 
 - Independent Codex audit: completed with no P0/P1/P2 finding; verified total rendered/source removal, no empty layout artifact, byte-identical agent rules, retained report warning and retained no-false-approval boundary.
 - Claude Code: the official `@anthropic-ai/claude-code` invocation was attempted with the requested review focus but returned `Not logged in · Please run /login`; no Claude review is claimed.
-- CodeRabbit: 未実施; request after final Preview evidence is attached and the PR becomes Ready.
-- Cursor Bugbot: the account spending-limit change was not saved before the user redirected the task; automatic review may remain unavailable at the existing limit.
+- CodeRabbit: no comment/review yet; request after this Preview evidence commit is pushed and the PR becomes Ready.
+- Cursor Bugbot: attempted automatically on PR #6 but returned `usage limit reached`; no Bugbot review is claimed.
 
 ### Concrete prompt for the next AI
 
