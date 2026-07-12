@@ -2,9 +2,9 @@
 
 ## Cycle 4 — first Supabase production data slice
 
-- **Current branch:** `agent/supabase-p0-release-evidence`
+- **Cycle 4 release-evidence branch:** `agent/supabase-p0-release-evidence`
 - **Cycle 4 implementation PR:** [#4](https://github.com/kotakase2022-jpg/gprnt/pull/4) — squash-merged through protected `main` as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
-- **Cycle 4 release-evidence PR:** pending creation from `agent/supabase-p0-release-evidence`; this docs-only follow-up records the already-verified runtime release
+- **Cycle 4 release-evidence PR:** [#5](https://github.com/kotakase2022-jpg/gprnt/pull/5) — docs-only follow-up recording the already-verified runtime release; GitHub is authoritative for its lifecycle state
 - **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
 - **Release evidence PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) merged to `main` as `9ce1843`
 - **Cycle number:** 4 (explicitly resumed by the user after the completed three-cycle synthetic-demo release)
