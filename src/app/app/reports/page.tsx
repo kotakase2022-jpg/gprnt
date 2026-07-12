@@ -369,7 +369,7 @@ function ReportShell({
         {children}
         <Separator className="my-6" />
         <p className="text-[10px] leading-4 text-muted-foreground">
-          JPX連携構想の検討用コンセプトMVPです。JPXによる承認・提供を示すものではありません。法的適合性や保証を示すレポートではありません。
+          法的適合性や保証を示すレポートではありません。
         </p>
       </CardContent>
     </Card>

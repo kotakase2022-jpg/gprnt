@@ -11,7 +11,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 | TERRAST連携設計                | 16 / 20 | `TerrastConnector`, Mock/import/API fail-closed implementations, mapping, lineage, idempotency and repository transaction tests are present. Deduction: real API contract is unknown and the remaining production repository workflows are still fail-closed.                                           |
 | 開示・Scope 3・移行計画機能    | 14 / 15 | Disclosure, all 15 Scope 3 categories, supplier response, transition actions, AI drafting and report output form one navigable workflow. Deduction: disclosure taxonomy summaries and DEMO factors require licensed/approved production sources.                                                        |
 | 信頼性・セキュリティ・監査性   |  8 / 10 | Route/action RBAC, company isolation, consent filtering, append-only audit patterns, private evidence storage, atomic AI provenance, and atomic manual metric/audit RPCs are implemented. Deduction: remote migration/RLS/Storage/pgTAP/advisors and the remaining adapter are not executed end to end. |
-| UI／UX・デモ品質               |   4 / 5 | Original Japanese capital-markets UI, desktop/tablet E2E, keyboard skip links, labels, role-aware navigation and exact concept disclaimer across major screens. Deduction: no formal accessibility audit or moderated usability test.                                                                   |
+| UI／UX・デモ品質               |   4 / 5 | Original Japanese capital-markets UI, desktop/tablet E2E, keyboard skip links, labels, role-aware navigation, synthetic-data labeling and concept-MVP positioning. Deduction: no formal accessibility audit or moderated usability test.                                                                |
 | エンジニアリング・デプロイ品質 |   5 / 5 | The merged Demo Mode release has strict TypeScript, all seven CI jobs, hooks, 114 unit tests, remote Preview/Production Playwright 3/3, 70.39% statement coverage, active main protection, and public Preview/Production. No score is added for unexecuted remote database validation.                  |
 
 ## Evidence index
@@ -21,7 +21,7 @@ Evaluation date: 2026-07-12. This is a concept-MVP score, not a production-readi
 - Tests: `src/**/*.test.*`, `e2e/critical-flow.spec.ts`, `scripts/check-supabase.mjs`, `.github/workflows/ci.yml`.
 - Documents: `docs/ARCHITECTURE.md`, `docs/TERRAST_INTEGRATION.md`, `docs/SECURITY.md`, `docs/JPX_PARTNERSHIP_DEMO.md`.
 - Current Demo Mode release: `npm run check` passed; 24 files / 114 tests passed; Playwright 3/3 passed; coverage statements 70.39%, branches 68.75%, functions 61.87%, lines 71.81%; 20 route entries built with 22 static generation units. Exact verification and the unexecuted database gate are recorded in `AI_HANDOFF.md`; no remote Supabase test is implied here.
-- URLs: [Production](https://terrast-disclosure-hub.vercel.app), final implementation [Preview](https://terrast-disclosure-8a840bcdz-kotakase2022-jpgs-projects.vercel.app), and merged Cycle 4 [PR #4](https://github.com/kotakase2022-jpg/gprnt/pull/4) are verified. Production deployment `dpl_9MEM7tHkW4WQQkpyBa4Z5u5Nw6kG` for protected-main SHA `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027` passed remote Playwright 3/3 plus landing and Demo `/app/data` browser-console/page-error checks.
+- URLs: primary [Production](https://terrast-disclosure-hub-prod.vercel.app), final Cycle 4 implementation [Preview](https://terrast-disclosure-8a840bcdz-kotakase2022-jpgs-projects.vercel.app), and merged Cycle 4 [PR #4](https://github.com/kotakase2022-jpg/gprnt/pull/4) are verified. Initial primary-production deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC` for protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668` passed remote Playwright 3/3 and a landing browser-console check.
 
 ## Autonomous improvement cycles
 
@@ -31,7 +31,7 @@ The feature surface existed, but production-mode authentication, deep-link and a
 
 ### Cycle 1 — demo comprehension and responsive shell
 
-Observed the landing and core shell at desktop/tablet sizes, fixed low-height/sidebar behavior, strengthened the 30-second value story, and kept the disclaimer visible. Re-ran browser smoke checks.
+Observed the landing and core shell at desktop/tablet sizes, fixed low-height/sidebar behavior, strengthened the 30-second value story, and kept synthetic-data and concept-MVP positioning visible. Re-ran browser smoke checks.
 
 ### Cycle 2 — lowest-scoring trust boundary
 

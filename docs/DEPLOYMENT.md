@@ -2,7 +2,7 @@
 
 ## Current external status
 
-The Vercel project `terrast-disclosure-hub` has been created in scope `kotakase2022-jpgs-projects`, linked to this workspace, and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Development, Preview, and Production. PR #1 has a public, verified Preview at `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`; Vercel SSO deployment protection was disabled so external reviewers can reach the synthetic demo. The stable production alias `https://terrast-disclosure-hub.vercel.app` tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment was `dpl_FZfi94vgQ63H6JnLZFUrrsyijHvu`, with Vercel Git metadata `main` / `dce3344c5b26b0de0108151db1e3565927f6c423`; the alias passed remote Playwright 3/3 after that promotion.
+The primary Vercel project `terrast-disclosure-hub-prod` was created through the authenticated Chrome dashboard in scope `kotakase2022-jpgs-projects` and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Production and Preview. Its stable alias is `https://terrast-disclosure-hub-prod.vercel.app`; initial deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC` for protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668` was READY and passed remote Playwright 3/3 with zero captured landing-page console errors. The earlier `terrast-disclosure-hub` project remains connected as a secondary deployment target.
 
 No remote Supabase project was created or linked. The Vercel deployment intentionally runs the synthetic, deterministic Demo Mode and contains no customer data or server secrets.
 
@@ -111,7 +111,7 @@ Do not run `--prod` until Preview verification and approval are recorded.
 Record the exact URL and commit, then verify:
 
 - landing and both working CTAs;
-- concept disclaimer on every major screen;
+- no screen claims JPX approval, endorsement, partnership, provision, or data provenance;
 - demo login and all role switches;
 - golden TERRAST mock preview/apply/conflict/idempotency flow;
 - disclosure, GHG, supplier, transition, AI/demo AI, review, audit, operator, print/CSV/JSON flows;

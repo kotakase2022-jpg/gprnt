@@ -2,7 +2,6 @@ import Link from "next/link";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { SupabaseSignInForm } from "@/components/auth/supabase-sign-in-form";
 import { Brand } from "@/components/brand";
-import { ConceptNotice } from "@/components/concept-notice";
 import { RoleSelector } from "@/components/demo/role-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,6 @@ export default function DemoLoginPage() {
                 ? "認証情報は不要です。各ロールの権限範囲に合わせて、企業データの同期、作成、レビュー、匿名集計を確認できます。操作内容はこのブラウザにのみ保存されます。"
                 : "Supabase Authで本人確認を行い、管理者がapp_metadataに設定したロールを表示と操作権限へ反映します。"}
             </p>
-            <ConceptNotice className="mt-4" />
           </div>
           {runtimeMode === "demo" ? (
             <RoleSelector />

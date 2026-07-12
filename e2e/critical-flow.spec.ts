@@ -1,4 +1,15 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+const removedJpxDisclaimerMarkers = [
+  "JPX連携構想",
+  "JPXによる承認・提供",
+] as const;
+
+async function expectFixedJpxDisclaimerAbsent(page: Page) {
+  for (const marker of removedJpxDisclaimerMarkers) {
+    await expect(page.getByText(marker, { exact: false })).toHaveCount(0);
+  }
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -21,12 +32,15 @@ test("company workflow reaches operator aggregate without runtime errors", async
   await expect(
     page.getByRole("heading", { name: /集め直さない/ }),
   ).toBeVisible();
+  await expectFixedJpxDisclaimerAbsent(page);
   await page
     .getByRole("link", { name: /デモを開始/ })
     .first()
     .click();
+  await expectFixedJpxDisclaimerAbsent(page);
   await page.getByTestId("role-company_admin").click();
   await expect(page).toHaveURL(/\/app\/dashboard/);
+  await expectFixedJpxDisclaimerAbsent(page);
   await expect(
     page.getByRole("heading", { name: "開示準備の現在地" }),
   ).toBeVisible();
@@ -119,6 +133,10 @@ test("company workflow reaches operator aggregate without runtime errors", async
     page.getByRole("heading", { name: /開示準備とデータ来歴/ }),
   ).toBeVisible();
   await expect(page.getByText("開示準備度レポート")).toBeVisible();
+  await expectFixedJpxDisclaimerAbsent(page);
+  await expect(
+    page.getByText("法的適合性や保証を示すレポートではありません。"),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: /レビュー・承認者/ }).click();
   await page.getByTestId("role-switch-platform_operator_demo_admin").click();
@@ -142,10 +160,12 @@ test("landing and demo login remain usable at tablet width", async ({
   await expect(
     page.getByRole("heading", { name: /集め直さない/ }),
   ).toBeVisible();
+  await expectFixedJpxDisclaimerAbsent(page);
   await page
     .getByRole("link", { name: /デモを開始/ })
     .first()
     .click();
+  await expectFixedJpxDisclaimerAbsent(page);
   await expect(
     page.getByText("役割を選んで、実務フローを体験。"),
   ).toBeVisible();
@@ -156,6 +176,7 @@ test("company state is isolated and role deep links are denied", async ({
   page,
 }) => {
   await page.goto("/demo");
+  await expectFixedJpxDisclaimerAbsent(page);
   await page.getByTestId("role-system_admin").click();
   await page.getByRole("link", { name: "企業・指標データ" }).click();
   await page.getByRole("button", { name: "不足項目を入力" }).click();

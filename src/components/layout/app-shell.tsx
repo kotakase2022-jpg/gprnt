@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { AccessDenied } from "@/components/auth/access-denied";
 import { useAppAuth } from "@/components/auth/auth-guard";
 import { Brand } from "@/components/brand";
-import { ConceptNotice } from "@/components/concept-notice";
 import {
   demoRoles,
   type DemoRole,
@@ -150,9 +149,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
           <Navigation pathname={pathname} role={role} />
-        </div>
-        <div className="shrink-0 border-t border-sidebar-border p-4">
-          <ConceptNotice className="text-sidebar-foreground/60" />
         </div>
       </aside>
 
@@ -316,9 +312,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <AccessDenied role={role} />
           )}
         </main>
-        <footer className="border-t px-6 py-4 lg:hidden" data-print-hide="true">
-          <ConceptNotice />
-        </footer>
       </div>
     </div>
   );
