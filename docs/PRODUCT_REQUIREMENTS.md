@@ -4,9 +4,7 @@
 
 This document defines the concept MVP as of 2026-07-12. The product demonstrates a possible operational foundation for Japanese listed-company sustainability disclosure. It is not a legal-compliance product, an assurance opinion, an official SSBJ/ISSB publication, or a JPX-provided service.
 
-Required product disclaimer:
-
-> JPX連携構想の検討用コンセプトMVPです。JPXによる承認・提供を示すものではありません。
+Product copy must not claim or imply formal JPX approval, endorsement, partnership, provision, or data provenance. A fixed on-screen disclaimer is not required.
 
 The core proposition is to start from synthetic data shaped like historical TERRAST data, identify gaps, and ask a company to complete only the missing information. No real TERRAST API or customer data is part of this repository.
 

@@ -14,7 +14,6 @@ import {
   Users,
 } from "lucide-react";
 import { Brand } from "@/components/brand";
-import { ConceptNotice } from "@/components/concept-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,7 +86,6 @@ export default function Home() {
                   </Link>
                 </Button>
               </div>
-              <ConceptNotice className="mt-6 max-w-2xl" />
             </div>
 
             <div className="relative self-center rounded-2xl border bg-card p-4 shadow-2xl shadow-primary/10 sm:p-6">
@@ -309,7 +307,6 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <Brand />
-            <ConceptNotice className="max-w-xl" />
           </div>
           <Separator className="my-6" />
           <p className="text-xs text-muted-foreground">

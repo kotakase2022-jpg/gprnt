@@ -11,9 +11,7 @@ This repository may use a Next.js version with breaking API, convention, and fil
 
 Build an operable concept MVP showing how listed companies could reuse synthetic TERRAST-like historical data, fill only missing information, prepare SSBJ/ISSB-oriented disclosures, collect Scope 3 data and evidence, review and approve drafts, build transition plans, export reports, and provide consent-controlled aggregate insight to a platform operator.
 
-Every major screen must display this disclaimer or an equivalent approved rendering:
-
-> JPX連携構想の検討用コンセプトMVPです。JPXによる承認・提供を示すものではありません。
+No fixed JPX disclaimer is required. Product copy must still follow the non-negotiable prohibitions below.
 
 ## Non-negotiable prohibitions
 

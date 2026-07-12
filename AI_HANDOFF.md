@@ -1,5 +1,68 @@
 # AI Handoff
 
+## Cycle 5 — user-directed JPX disclaimer removal and Production redeploy
+
+- **Branch:** `agent/remove-jpx-disclaimer`
+- **Target PR:** [#6](https://github.com/kotakase2022-jpg/gprnt/pull/6) — Ready from this branch to protected `main`
+- **Runtime-verified implementation head:** `a098935f8d4ab643ad7a7fbd0528cd4688de7fa6`
+- **Final code/test head before this handoff-only evidence update:** `cf2319b28c9a0dcf151525046a512c25cbc3907f`
+- **Requested change:** remove the fixed JPX concept disclaimer from every rendered surface and repository copy.
+- **Positioning boundary retained:** product copy must not claim or imply formal JPX approval, endorsement, partnership, provision, or data provenance; synthetic-data labeling remains.
+- **Primary Production baseline before this change:** https://terrast-disclosure-hub-prod.vercel.app — project `terrast-disclosure-hub-prod`, deployment `dpl_DVRRZPMLecRhfkLVXzphqZE6dapC`, protected-main SHA `73543bb80fd6cdd5420cf6cd34d9ff4b828dd668`, READY, remote Playwright 3/3.
+- **Release requirement:** run local quality gates, verify the PR Preview contains no fixed disclaimer, merge through protected `main`, then verify the primary Production alias and deployment metadata.
+
+### Cycle 5 completed items
+
+- Deleted the shared `ConceptNotice` component and removed its landing, demo-login, desktop-shell, mobile-shell and footer render sites.
+- Removed the fixed sentence from the report footer while retaining the separate legal-compliance/assurance warning.
+- Updated README, product requirements, partnership-demo guidance, assumptions, deployment guidance, self-evaluation and agent rules so they no longer require a fixed disclaimer.
+- Retained the prohibition on claims of formal JPX approval, endorsement, partnership, provision or JPX-sourced data.
+- Updated the primary public URL to `https://terrast-disclosure-hub-prod.vercel.app` and documented its already-verified pre-change baseline.
+
+### Cycle 5 changed files
+
+- UI: `src/app/page.tsx`, `src/app/demo/page.tsx`, `src/app/app/reports/page.tsx`, `src/components/layout/app-shell.tsx`; deleted `src/components/concept-notice.tsx`.
+- Tests: `e2e/critical-flow.spec.ts` adds absence checks across landing, demo, authenticated app/report and retains the report assurance-warning assertion.
+- Rules/docs: `AGENTS.md`, `CLAUDE.md`, `README.md`, `AI_HANDOFF.md`, `docs/ASSUMPTIONS.md`, `docs/DEPLOYMENT.md`, `docs/JPX_PARTNERSHIP_DEMO.md`, `docs/PRODUCT_REQUIREMENTS.md`, `docs/SELF_EVALUATION.md`.
+
+### Cycle 5 database and environment
+
+- **DB migrations:** なし。Schema, RLS, RPC and seed are unchanged.
+- **Environment changes for this PR:** なし。Primary Vercel project remains in Demo Mode with the existing Production/Preview variables.
+- **Security/tenant impact:** no authorization, tenant, data, audit, API or secret-handling path changed.
+- **Rollback:** revert the Cycle 5 PR; no database or environment rollback is required.
+
+### Cycle 5 verification
+
+- Exact fixed-text scan: passed — zero repository/worktree matches. The deleted component name has zero implementation/import/export matches under `src` and `e2e`; historical changed-file mentions remain in this handoff only.
+- `npm run check`: passed — formatting, ESLint with zero warnings, strict typecheck, 24 files / 114 unit tests, two-migration/31-table Supabase static checks and Next.js production build.
+- `npm run test:e2e`: passed — 3/3 Chromium tests covering the golden company workflow, tablet landing/login and tenant/deep-link isolation.
+- `npm run agents:check`: passed as part of `npm run check`; `AGENTS.md` and `CLAUDE.md` are byte-identical.
+- React review: no hook, state, event, accessibility or TypeScript behavior changed; only obsolete imports and render containers were removed.
+- **Required final code/test CI:** passed 7/7 on head `cf2319b` — `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; [Actions run 29201942545](https://github.com/kotakase2022-jpg/gprnt/actions/runs/29201942545), attempt 1. `e2e-smoke` passed 3/3 with zero retry/flaky/failed annotations. Both Vercel project status contexts and Preview Comments also passed on the same head.
+- **Primary final-code PR Preview:** READY — project `terrast-disclosure-hub-prod`, deployment `dpl_2BevjKjE2KzfSdnPqD8eZzikhWuK`, commit `cf2319b28c9a0dcf151525046a512c25cbc3907f`, unique URL `https://terrast-disclosure-hub-prod-9zont0u1l.vercel.app`, branch alias `https://terrast-disclosure-hub-pr-git-3b79ed-kotakase2022-jpgs-projects.vercel.app`.
+- **Primary Preview runtime:** passed remote Playwright 3/3 on implementation head `a098935` after supplying a temporary Vercel Automation Bypass header. The tests verified absence on landing, demo login, authenticated app and report, retained `法的適合性や保証を示すレポートではありません。`, and zero collected console/page errors. Changes after that runtime-verified head are documentation and E2E-harness-only; after the keyboard-based role-switch stabilization, local `--repeat-each=3` passed 9/9 and final-head CI passed without retry. The first unauthenticated Preview attempt correctly reached Vercel Authentication rather than the app; both temporary bypass tokens created during diagnosis were revoked after verification.
+- **Evidence-update tip:** this commit changes only `AI_HANDOFF.md` to address the Codex review evidence finding; GitHub checks and Vercel metadata on the resulting docs-only PR tip remain the authoritative final-head gate.
+- **Post-merge Production:** 未実施 — merge and Git-connected Production redeploy are pending.
+
+### Cycle 5 unresolved items and priorities
+
+- **P0:** move PR #6 to Ready, request the configured reviews, merge through protected `main`, and verify `https://terrast-disclosure-hub-prod.vercel.app` serves the merged SHA without the fixed disclaimer.
+- **P1:** なし for this bounded copy-removal change. The existing unexecuted Supabase production gate remains documented under Cycle 4.
+- **P2:** monitor stakeholder/legal feedback on future positioning copy without restoring the removed fixed sentence unless explicitly requested.
+
+### Cycle 5 review status
+
+- Independent Codex audit: completed with no P0/P1/P2 finding; verified total rendered/source removal, no empty layout artifact, byte-identical agent rules, retained report warning and retained no-false-approval boundary.
+- GitHub Codex review: one P2 evidence-freshness thread on `AI_HANDOFF.md`; addressed by this handoff-only update using final code/test head `cf2319b`, CI run `29201942545` and Preview deployment `dpl_2BevjKjE2KzfSdnPqD8eZzikhWuK`.
+- Claude Code: the official `@anthropic-ai/claude-code` invocation was attempted with the requested review focus but returned `Not logged in · Please run /login`; no Claude review is claimed.
+- CodeRabbit: explicitly requested with `@coderabbitai review` after the PR became Ready; no CodeRabbit comment/review has arrived.
+- Cursor Bugbot: attempted automatically on PR #6 but returned `usage limit reached`; no Bugbot review is claimed.
+
+### Concrete prompt for the next AI
+
+> Read `AGENTS.md`, `CLAUDE.md` and Cycle 5 in `AI_HANDOFF.md`. Inspect the Cycle 5 PR and verify the removed fixed JPX disclaimer has zero source and rendered matches, the separate report assurance warning remains, all required CI and Vercel checks pass, and the primary Production alias redeploys the merged `main` SHA. Do not enable Supabase mode or change authorization/data paths.
+
 ## Cycle 4 — first Supabase production data slice
 
 - **Cycle 4 release-evidence branch:** `agent/supabase-p0-release-evidence`
@@ -13,7 +76,7 @@
 
 ### Improvement history
 
-1. **Cycle 1 — initial MVP and demo comprehension:** built the Next.js foundation, original Japanese UI, full feature surface, synthetic data, responsive shell, landing value story and exact concept disclaimer.
+1. **Cycle 1 — initial MVP and demo comprehension:** built the Next.js foundation, original Japanese UI, full feature surface, synthetic data, responsive shell, landing value story and clear concept positioning.
 2. **Cycle 2 — trust boundary:** added fail-closed runtime auth, route/action RBAC, company-isolated demo state, consent-aware operator aggregation, AI source authorization/evidence allow-list/provenance, CSV injection defense, server-owned database writes and Storage/RLS hardening. Independent audit moved the working score from 70 to 81.
 3. **Cycle 3 — workflow and release proof:** closed role/state transition bypasses, approval editing, company/prompt provenance mismatches and public demo-AI text injection; made AI audit persistence atomic with correlation IDs; aligned OpenAPI/security docs; expanded negative unit/E2E checks.
 4. **Cycle 4 — metric production slice:** added strict, non-fabricating Supabase row mappers and RLS-backed company/period/tenant-resolved catalog/value reads for `/app/data`; added a service-only, optimistic-locking manual metric RPC that preserves the exact effective role and stores redacted value/reason/scope/boundary hashes atomically; replaced stale JWT-only system-admin authorization with current membership verification; left all unreviewed non-AI operations and production export fail-closed.
@@ -53,7 +116,7 @@
 
 - `.env.example` documents Demo Mode, Supabase public/server separation, optional OpenAI, future TERRAST adapter and AI rate limits.
 - `SUPABASE_SECRET_KEY` is the preferred independently rotatable server key; `SUPABASE_SERVICE_ROLE_KEY` remains a legacy compatibility fallback. Neither is browser-visible.
-- Vercel project `terrast-disclosure-hub` exists in `kotakase2022-jpgs-projects`, is linked to `kotakase2022-jpg/gprnt`, and has `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, `TERRAST_CONNECTOR_MODE=mock` for Development/Preview/Production.
+- Primary Vercel project `terrast-disclosure-hub-prod` and secondary project `terrast-disclosure-hub` exist in `kotakase2022-jpgs-projects` and are linked to `kotakase2022-jpg/gprnt`. The primary project has `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` for Production/Preview.
 - No Supabase/OpenAI/TERRAST secret is configured or committed. Evidence TTL/max-size settings are explicitly reserved until those server commands exist.
 
 ### Tests executed and results
@@ -98,7 +161,7 @@
 - TERRAST real API specification, auth, endpoint, payload, field ownership, rate limit, SLA and sandbox remain unknown. API mode stays fail-closed.
 - Supplier demo URL is presentation-only. Real token redemption/expiry/rotation/identity binding and evidence signed-URL/upload server commands are not wired.
 - Production factors/taxonomy licensing, legal wording, consent, retention/deletion, malware scanning, SSO/SCIM, route-wide abuse controls/WAF beyond the manual-metric database limiter, observability and operating ownership remain gates.
-- JPX has not approved, provided or partnered on this product. Every major screen must retain the exact concept disclaimer.
+- JPX has not approved, provided or partnered on this product. The fixed disclaimer was removed at the user's explicit direction; copy must still avoid any approval, endorsement, partnership, provision, or JPX-data claim.
 
 ### Next priorities
 

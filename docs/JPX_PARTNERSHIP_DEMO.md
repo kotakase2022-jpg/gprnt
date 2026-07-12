@@ -2,11 +2,7 @@
 
 ## Mandatory framing
 
-Open and close the demonstration with the following statement, and keep it visible in the product:
-
-> JPX連携構想の検討用コンセプトMVPです。JPXによる承認・提供を示すものではありません。
-
-Do not use JPX logos, imitate JPX pages, call the product official/approved, or imply that displayed market/company data came from JPX. All companies, codes, values, market segments, services, and factors in this demo are synthetic.
+Do not use JPX logos, imitate JPX pages, call the product official/approved, or imply that displayed market/company data came from JPX. All companies, codes, values, market segments, services, and factors in this demo are synthetic. A fixed on-screen disclaimer is not required.
 
 ## Ten-step explanation order
 

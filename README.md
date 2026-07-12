@@ -2,15 +2,13 @@
 
 TERRASTに蓄積済みのデータを初期値として活用し、日本企業のサステナビリティ開示準備を「同期 → 不足補完 → 開示案 → レビュー／承認 → 移行計画 → 出力 → 匿名集計」まで一貫して体験できるコンセプトMVPです。
 
-> JPX連携構想の検討用コンセプトMVPです。JPXによる承認・提供を示すものではありません。
-
 実在企業の顧客データ、TERRASTの実データ／API、正式な排出係数、基準本文は含みません。画面とseedはすべて合成デモデータです。
 
 ## 公開環境
 
-- Production: [https://terrast-disclosure-hub.vercel.app](https://terrast-disclosure-hub.vercel.app)
-- Preview: [feature branch deployment](https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app)
-- GitHub PR: [#1 — TERRAST Sustainability Disclosure Hub MVP](https://github.com/kotakase2022-jpg/gprnt/pull/1)
+- Production: [https://terrast-disclosure-hub-prod.vercel.app](https://terrast-disclosure-hub-prod.vercel.app)
+- Preview: Vercel Git integration creates a deployment for each pull request.
+- Repository: [kotakase2022-jpg/gprnt](https://github.com/kotakase2022-jpg/gprnt)
 
 ## 5分で起動
 
