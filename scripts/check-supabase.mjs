@@ -4,10 +4,15 @@ const migrationDirectory = "supabase/migrations";
 const migrationFiles = readdirSync(migrationDirectory)
   .filter((file) => file.endsWith(".sql"))
   .sort();
+
+function readSql(file) {
+  return readFileSync(file, "utf8").replace(/\r\n?/g, "\n");
+}
+
 const migration = migrationFiles
-  .map((file) => readFileSync(`${migrationDirectory}/${file}`, "utf8"))
+  .map((file) => readSql(`${migrationDirectory}/${file}`))
   .join("\n");
-const seed = readFileSync("supabase/seed.sql", "utf8");
+const seed = readSql("supabase/seed.sql");
 
 const requiredTables = [
   "organizations",

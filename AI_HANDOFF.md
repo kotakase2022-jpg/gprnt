@@ -4,7 +4,7 @@
 
 - **Cycle 4 release-evidence branch:** `agent/supabase-p0-release-evidence`
 - **Cycle 4 implementation PR:** [#4](https://github.com/kotakase2022-jpg/gprnt/pull/4) — squash-merged through protected `main` as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
-- **Cycle 4 release-evidence PR:** [#5](https://github.com/kotakase2022-jpg/gprnt/pull/5) — docs-only follow-up recording the already-verified runtime release; GitHub is authoritative for its lifecycle state
+- **Cycle 4 release-evidence PR:** [#5](https://github.com/kotakase2022-jpg/gprnt/pull/5) — records the already-verified runtime release and makes the SQL static checker line-ending independent; GitHub is authoritative for its lifecycle state
 - **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
 - **Release evidence PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) merged to `main` as `9ce1843`
 - **Cycle number:** 4 (explicitly resumed by the user after the completed three-cycle synthetic-demo release)
@@ -65,12 +65,13 @@
 - `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app npm run test:e2e`: passed — Cycle 4 Preview 3/3, including the updated manual reason/scope/boundary provenance assertion, with no captured console/page errors.
 - `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub.vercel.app npm run test:e2e`: passed — Cycle 4 Production 3/3 after PR #4 merged; landing and Demo company-admin `/app/data` also reported zero browser-console and page errors.
 - `npm run agents:check`: passed — `AGENTS.md` and `CLAUDE.md` are byte-identical.
+- `npm run db:check`: passed with both Git/CI LF and Windows-checkout CRLF SQL inputs after normalizing line endings inside the read-only static checker.
 - Build output: 20 route entries including dynamic `/api/ai/disclosure` and `/api/workspace/metric-values`; static generation completed for 22 pages/assets.
 - `npm audit`: two moderate transitive advisories from Next.js's bundled PostCSS remain; npm's suggested force fix is a destructive Next.js downgrade and was not applied.
 
 ### Deployment / external state
 
-- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — PR #4 runtime deployment `dpl_9MEM7tHkW4WQQkpyBa4Z5u5Nw6kG` was READY for `githubCommitRef=main` / `githubCommitSha=cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`; its unique URL is https://terrast-disclosure-qujsu0kd6-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + Demo `/app/data` browser checks passed with zero console/page errors. The docs-only release-evidence merge may advance the deployment ID without changing runtime code.
+- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — PR #4 runtime deployment `dpl_9MEM7tHkW4WQQkpyBa4Z5u5Nw6kG` was READY for `githubCommitRef=main` / `githubCommitSha=cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`; its unique URL is https://terrast-disclosure-qujsu0kd6-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + Demo `/app/data` browser checks passed with zero console/page errors. The release-evidence/static-checker merge may advance the deployment ID without changing application runtime code.
 - **Cycle 4 Vercel Preview URL:** https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app — final implementation head `e5a3910ad6a71d65b9d3c4aab7eefdba5b65f300` was READY as `dpl_FCzhk8jL4uz4fYwiFeJru2wa479S`; its unique URL is https://terrast-disclosure-8a840bcdz-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + `/app/data` browser checks passed with zero console/page errors.
 - **GitHub Cycle 4 PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/4 — MERGED as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
 - **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
