@@ -32,6 +32,12 @@ export const demoRoles = [
 
 export type DemoRole = UserRole;
 
+export type SessionCompany = {
+  id: string;
+  name: string;
+  code: string;
+};
+
 export const demoCompanies = [
   {
     id: "mirai-manufacturing",
@@ -50,6 +56,8 @@ type DemoSessionValue = {
   role: DemoRole;
   setRole: (role: DemoRole) => void;
   syncTrustedRole: (role: DemoRole) => void;
+  companies: SessionCompany[];
+  syncTrustedCompanies: (companies: SessionCompany[]) => void;
   companyId: string;
   setCompanyId: (companyId: string) => void;
   resetDemo: () => void;
@@ -66,8 +74,11 @@ export function DemoSessionProvider({
 }) {
   const runtimeMode = getPublicRuntimeMode();
   const [role, setRoleState] = React.useState<DemoRole>("company_admin");
-  const [companyId, setCompanyIdState] = React.useState<string>(
-    demoCompanies[0].id,
+  const [companies, setCompanies] = React.useState<SessionCompany[]>(() =>
+    runtimeMode === "demo" ? [...demoCompanies] : [],
+  );
+  const [companyId, setCompanyIdState] = React.useState<string>(() =>
+    runtimeMode === "demo" ? demoCompanies[0].id : "",
   );
   const [hydrated, setHydrated] = React.useState(runtimeMode !== "demo");
 
@@ -127,6 +138,19 @@ export function DemoSessionProvider({
     [runtimeMode],
   );
 
+  const syncTrustedCompanies = React.useCallback(
+    (nextCompanies: SessionCompany[]) => {
+      if (runtimeMode !== "supabase") return;
+      setCompanies(nextCompanies);
+      setCompanyIdState((current) =>
+        nextCompanies.some((company) => company.id === current)
+          ? current
+          : (nextCompanies[0]?.id ?? ""),
+      );
+    },
+    [runtimeMode],
+  );
+
   const resetDemo = React.useCallback(() => {
     try {
       window.localStorage.removeItem(SESSION_KEY);
@@ -135,6 +159,7 @@ export function DemoSessionProvider({
       // Storage restrictions must not prevent resetting in-memory demo state.
     }
     setRoleState("company_admin");
+    setCompanies([...demoCompanies]);
     setCompanyIdState(demoCompanies[0].id);
     window.dispatchEvent(new CustomEvent("terrast-demo-reset"));
   }, []);
@@ -144,12 +169,23 @@ export function DemoSessionProvider({
       role,
       setRole,
       syncTrustedRole,
+      companies,
+      syncTrustedCompanies,
       companyId,
       setCompanyId: setCompanyIdState,
       resetDemo,
       hydrated,
     }),
-    [role, setRole, syncTrustedRole, companyId, resetDemo, hydrated],
+    [
+      role,
+      setRole,
+      syncTrustedRole,
+      companies,
+      syncTrustedCompanies,
+      companyId,
+      resetDemo,
+      hydrated,
+    ],
   );
 
   return <DemoSessionContext value={value}>{children}</DemoSessionContext>;

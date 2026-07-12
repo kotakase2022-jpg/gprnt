@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getLazySupabaseClient } from "@/lib/supabase/client";
 import type { SustainabilityRepository } from "./repository";
+import { SupabaseSchemaAdapter } from "./supabase-schema-adapter";
+import type { SupabaseMetricCommandTransport } from "./supabase-metric-command";
 
 export type SupabaseRepositoryDelegateFactory = (
   client: SupabaseClient,
@@ -9,37 +11,29 @@ export type SupabaseRepositoryDelegateFactory = (
 export interface SupabaseRepositoryOptions {
   getClient?: () => SupabaseClient;
   /**
-   * Inject the schema-specific mapper/adapter once migrations are finalized.
-   * No table shape or undocumented endpoint is guessed by this MVP skeleton.
+   * Optional full adapter override. Without one, the reviewed metric-data
+   * slice is enabled and every other operation remains explicitly fail-closed.
    */
   delegateFactory?: SupabaseRepositoryDelegateFactory;
-}
-
-export class SupabaseRepositoryError extends Error {
-  readonly code: "SCHEMA_ADAPTER_REQUIRED";
-
-  constructor() {
-    super(
-      "SupabaseRepository requires a schema-specific delegateFactory. The MVP does not invent unconfirmed table mappings.",
-    );
-    this.name = "SupabaseRepositoryError";
-    this.code = "SCHEMA_ADAPTER_REQUIRED";
-  }
+  metricCommandTransport?: SupabaseMetricCommandTransport;
 }
 
 export class SupabaseRepository implements SustainabilityRepository {
   private readonly getClient: () => SupabaseClient;
-  private readonly delegateFactory?: SupabaseRepositoryDelegateFactory;
+  private readonly delegateFactory: SupabaseRepositoryDelegateFactory;
   private delegatePromise?: Promise<SustainabilityRepository>;
 
   constructor(options: SupabaseRepositoryOptions = {}) {
     this.getClient = options.getClient ?? getLazySupabaseClient;
-    this.delegateFactory = options.delegateFactory;
+    this.delegateFactory =
+      options.delegateFactory ??
+      ((client) =>
+        new SupabaseSchemaAdapter(client, {
+          metricCommandTransport: options.metricCommandTransport,
+        }));
   }
 
   private delegate(): Promise<SustainabilityRepository> {
-    if (!this.delegateFactory)
-      return Promise.reject(new SupabaseRepositoryError());
     this.delegatePromise ??= Promise.resolve(
       this.delegateFactory(this.getClient()),
     );
@@ -79,8 +73,8 @@ export class SupabaseRepository implements SustainabilityRepository {
   ) {
     return (await this.delegate()).saveSharingConsent(consent);
   }
-  async listMetrics() {
-    return (await this.delegate()).listMetrics();
+  async listMetrics(organizationId?: string) {
+    return (await this.delegate()).listMetrics(organizationId);
   }
   async listMetricValues(
     query?: Parameters<SustainabilityRepository["listMetricValues"]>[0],

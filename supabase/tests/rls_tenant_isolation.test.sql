@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(7);
+select plan(8);
 
 -- Test identities are transactional and use reserved .invalid addresses.
 insert into auth.users (
@@ -63,6 +63,12 @@ values
     '44444444-4444-4444-8444-444444444444',
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
     'platform_operator_demo_admin',
+    true
+  ),
+  (
+    '11111111-1111-4111-8111-111111111111',
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    'system_admin',
     true
   );
 
@@ -177,7 +183,22 @@ select set_config(
 select is(
   (select count(*) from public.companies),
   3::bigint,
-  'trusted app_metadata role can grant system-admin visibility'
+  'trusted app_metadata plus active system-admin membership grants visibility'
+);
+
+reset role;
+
+update public.organization_members
+set is_active = false
+where user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  and role = 'system_admin';
+
+set local role authenticated;
+
+select is(
+  (select count(*) from public.companies),
+  1::bigint,
+  'revoked system-admin membership constrains a still-valid JWT immediately'
 );
 
 select * from finish();

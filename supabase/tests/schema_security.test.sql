@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(28);
 
 select is(
   (
@@ -135,8 +135,20 @@ select is(
       and tablename = 'objects'
       and policyname like 'evidence_storage_%'
   ),
-  4::bigint,
-  'evidence bucket has SELECT, INSERT, UPDATE, and DELETE policies'
+  3::bigint,
+  'evidence bucket has SELECT, INSERT, and UPDATE policies'
+);
+
+select is(
+  (
+    select count(*)
+    from pg_catalog.pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'evidence_storage_delete'
+  ),
+  0::bigint,
+  'evidence deletion has no authenticated Storage policy'
 );
 
 select is(
@@ -317,6 +329,84 @@ select is(
   ),
   30::bigint,
   'service role has explicit access to all required public tables'
+);
+
+select is(
+  (
+    select count(*)
+    from information_schema.routine_privileges
+    where specific_schema = 'public'
+      and routine_name = 'save_manual_metric_value_with_audit'
+      and grantee in ('PUBLIC', 'anon', 'authenticated')
+      and privilege_type = 'EXECUTE'
+  ),
+  0::bigint,
+  'manual metric command is not executable by browser roles'
+);
+
+select is(
+  (
+    select count(*)
+    from information_schema.table_privileges
+    where table_schema = 'public'
+      and grantee = 'service_role'
+      and privilege_type in ('UPDATE', 'DELETE')
+      and table_name = any (array[
+        'audit_logs', 'ai_generation_logs', 'approvals',
+        'review_comments', 'terrast_sync_records', 'calculation_records',
+        'disclosure_drafts'
+      ])
+  ),
+  0::bigint,
+  'service role cannot rewrite or erase append-only history'
+);
+
+select is(
+  (
+    select count(*)
+    from information_schema.table_privileges
+    where table_schema = 'public'
+      and grantee = 'service_role'
+      and privilege_type = 'DELETE'
+      and table_name <> 'supplier_invitation_secrets'
+  ),
+  0::bigint,
+  'service role cannot erase application rows or history through parent cascades'
+);
+
+select is(
+  (
+    select is_nullable
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'review_comments'
+      and column_name = 'author_user_id'
+  ),
+  'YES',
+  'review comments survive administrative deletion of their Auth identity'
+);
+
+select is(
+  (
+    select delete_rule
+    from information_schema.referential_constraints
+    where constraint_schema = 'public'
+      and constraint_name = 'review_comments_author_user_id_fkey'
+  ),
+  'SET NULL',
+  'review comment authors are detached without deleting immutable comments'
+);
+
+select ok(
+  exists (
+    select 1
+    from information_schema.table_constraints
+    where table_schema = 'public'
+      and table_name = 'metrics'
+      and constraint_name = 'metrics_metric_code_command_safe'
+      and constraint_type = 'CHECK'
+  ),
+  'metric codes satisfy the same command-safe contract in DB and API'
 );
 
 select * from finish();

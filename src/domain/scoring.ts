@@ -125,6 +125,17 @@ const clampPercent = (value: number, field: string): number => {
   return Math.min(100, Math.max(0, value));
 };
 
+const CONFIDENCE_LEVEL_SCORES: Readonly<Record<ConfidenceLevel, number>> = {
+  unknown: 0,
+  low: 25,
+  medium: 65,
+  high: 100,
+};
+
+export function confidenceLevelScore(level: ConfidenceLevel): number {
+  return CONFIDENCE_LEVEL_SCORES[level];
+}
+
 export function calculateDataQualityScore(
   input: DataQualityInput,
 ): DataQualityScore {
@@ -139,11 +150,6 @@ export function calculateDataQualityScore(
     );
   }
 
-  const confidenceScores: Record<ConfidenceLevel, number> = {
-    low: 25,
-    medium: 65,
-    high: 100,
-  };
   const verificationScores: Record<VerificationStatus, number> = {
     unverified: 25,
     internally_reviewed: 70,
@@ -170,7 +176,7 @@ export function calculateDataQualityScore(
     { key: "freshness", score: freshness, weight: 0.15 },
     {
       key: "confidence",
-      score: confidenceScores[input.confidenceLevel],
+      score: confidenceLevelScore(input.confidenceLevel),
       weight: 0.15,
     },
     {

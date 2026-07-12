@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+import { confidenceLevelScore, type ConfidenceLevel } from "@/domain";
 import {
   detectSourceInconsistencies,
   summarizePriorYearChanges,
@@ -17,9 +18,10 @@ import {
 } from "@/lib/ai/schema";
 import { getPublicRuntimeMode } from "@/lib/auth/runtime";
 import {
-  getLazySupabaseClient,
-  readSupabasePublicConfig,
-} from "@/lib/supabase/client";
+  createServiceSupabaseClient,
+  createUserScopedSupabaseClient,
+  readSupabaseServerSecret,
+} from "@/lib/supabase/server";
 
 const PROMPT_VERSION = "disclosure-assistant-v2";
 const allowedRoles = new Set(["system_admin", "company_admin", "preparer"]);
@@ -104,19 +106,11 @@ function rateLimit(request: NextRequest, actor: string): boolean {
 }
 
 function requestScopedClient(token: string): SupabaseClient | null {
-  const config = readSupabasePublicConfig();
-  if (!config) return null;
   try {
-    // Reuse the public-client validator so a service/secret key can never be
-    // accepted through a NEXT_PUBLIC variable.
-    getLazySupabaseClient(config);
+    return createUserScopedSupabaseClient(token);
   } catch {
     return null;
   }
-  return createClient(config.url, config.publishableKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
 }
 
 async function authorize(
@@ -359,10 +353,9 @@ function scalarValue(
 }
 
 function confidenceScore(value: unknown): number {
-  if (value === "high") return 95;
-  if (value === "medium") return 75;
-  if (value === "low") return 45;
-  return 25;
+  if (["unknown", "low", "medium", "high"].includes(value as string))
+    return confidenceLevelScore(value as ConfidenceLevel);
+  return 0;
 }
 
 async function authoritativeInput(
@@ -503,12 +496,8 @@ async function persistProvenance(input: {
   requestId: string;
 }): Promise<boolean> {
   try {
-    const config = readSupabasePublicConfig();
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-    if (!config || !serviceKey || !input.identity.organizationId) return false;
-    const service = createClient(config.url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    if (!input.identity.organizationId) return false;
+    const service = createServiceSupabaseClient();
     const { data, error } = await service.rpc(
       "append_ai_generation_with_audit",
       {
@@ -600,7 +589,7 @@ export async function POST(request: NextRequest) {
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   const model = process.env.OPENAI_MODEL?.trim();
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const serviceKey = readSupabaseServerSecret();
   if (!serviceKey) return failure("server_not_configured", 503);
 
   if (!apiKey || !model) {

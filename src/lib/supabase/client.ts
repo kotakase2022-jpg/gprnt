@@ -37,7 +37,9 @@ function decodeJwtRole(key: string): string | undefined {
   return undefined;
 }
 
-function validatePublicConfig(config: SupabasePublicConfig): void {
+export function validateSupabasePublicConfig(
+  config: SupabasePublicConfig,
+): void {
   let parsed: URL;
   try {
     parsed = new URL(config.url);
@@ -91,7 +93,7 @@ export function getLazySupabaseClient(
       "Supabase public configuration is absent. Use DemoRepository or provide public URL and publishable key.",
     );
   }
-  validatePublicConfig(config);
+  validateSupabasePublicConfig(config);
   const fingerprint = `${config.url}\u0000${config.publishableKey}`;
   if (!browserClient || browserClientFingerprint !== fingerprint) {
     browserClient = createClient(config.url, config.publishableKey, {

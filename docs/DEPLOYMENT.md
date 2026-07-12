@@ -2,7 +2,7 @@
 
 ## Current external status
 
-The Vercel project `terrast-disclosure-hub` has been created in scope `kotakase2022-jpgs-projects`, linked to this workspace, and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Development, Preview, and Production. PR #1 has a public, verified Preview at `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`; Vercel SSO deployment protection was disabled so external reviewers can reach the synthetic demo. The stable production alias `https://terrast-disclosure-hub.vercel.app` tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment before the final handoff update was `dpl_9JgBUKyKsL9i4ign7qa6cDS7rk8C`, with Vercel API Git metadata `main` / `9ce1843b7d474a5512229e18836e14914c713fb3`; the alias passed remote Playwright 3/3 after that promotion. Later docs-only handoff commits may advance the deployment ID without changing runtime behavior.
+The Vercel project `terrast-disclosure-hub` has been created in scope `kotakase2022-jpgs-projects`, linked to this workspace, and connected to `kotakase2022-jpg/gprnt`. `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_DEMO_MODE=true`, and `TERRAST_CONNECTOR_MODE=mock` are configured for Development, Preview, and Production. PR #1 has a public, verified Preview at `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`; Vercel SSO deployment protection was disabled so external reviewers can reach the synthetic demo. The stable production alias `https://terrast-disclosure-hub.vercel.app` tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment was `dpl_FZfi94vgQ63H6JnLZFUrrsyijHvu`, with Vercel Git metadata `main` / `dce3344c5b26b0de0108151db1e3565927f6c423`; the alias passed remote Playwright 3/3 after that promotion.
 
 No remote Supabase project was created or linked. The Vercel deployment intentionally runs the synthetic, deterministic Demo Mode and contains no customer data or server secrets.
 
@@ -25,7 +25,8 @@ No remote Supabase project was created or linked. The Vercel deployment intentio
 | `NEXT_PUBLIC_SUPABASE_URL`             | yes      | local/dev                        | preview project                        | production project                  |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes      | matching project                 | matching preview                       | matching production                 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY`        | yes      | legacy fallback only             | legacy fallback only                   | remove when app no longer needs it  |
-| `SUPABASE_SERVICE_ROLE_KEY`            | no       | dev project                      | preview project                        | production project, server-only     |
+| `SUPABASE_SECRET_KEY`                  | no       | dev project, preferred           | preview project, preferred             | production project, server-only     |
+| `SUPABASE_SERVICE_ROLE_KEY`            | no       | legacy fallback only             | legacy fallback only                   | remove after key migration          |
 | `OPENAI_API_KEY`                       | no       | optional                         | optional/restricted                    | approved server key                 |
 | `OPENAI_MODEL`                         | no       | blank for demo or approved model | approved value                         | approved value                      |
 | `TERRAST_CONNECTOR_MODE`               | no       | `mock`                           | `mock`                                 | `mock` until real contract approved |
@@ -34,7 +35,7 @@ No remote Supabase project was created or linked. The Vercel deployment intentio
 | AI rate-limit values                   | no       | `.env.example` demo defaults     | reviewed; in-memory demo limiter       | distributed limiter before real use |
 | evidence TTL/max-size values           | no       | reserved, not yet wired          | omit until commands exist              | production gate                     |
 
-The publishable/legacy anon key is designed for browser use with RLS; the service-role key is not. Preview must not reuse production service/data credentials.
+The publishable/legacy anon key is designed for browser use with RLS; neither server secret is. Prefer the independently rotatable `SUPABASE_SECRET_KEY`; retain `SUPABASE_SERVICE_ROLE_KEY` only as a temporary legacy fallback. Preview must not reuse production service/data credentials.
 
 ## 3. Supabase local verification and migration
 
@@ -60,6 +61,8 @@ supabase migration list --local
 
 Before a remote change, link to the exact non-production project, inspect the diff/list, take an approved backup, and apply through the reviewed workflow. Run Supabase database/security advisors after applying. Never point a local reset command at shared/production data.
 
+The first production data-path slice is defined by `20260712143139_save_manual_metric_value_with_audit.sql` and `supabase/tests/manual_metric_command.test.sql`. It enables `/app/data` RLS reads plus the service-only atomic manual metric/audit command; all other non-AI mutations remain fail-closed. No remote project is linked, so migration application, pgTAP, RLS/Storage negative tests, and database/security advisors are **not run remotely**.
+
 Seed SQL is synthetic and appropriate only for demo environments. Do not run it in a production customer tenant.
 
 ## 4. Vercel CLI sequence
@@ -81,7 +84,7 @@ vercel env add NEXT_PUBLIC_APP_NAME
 vercel env add NEXT_PUBLIC_DEMO_MODE
 vercel env add NEXT_PUBLIC_SUPABASE_URL
 vercel env add NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-vercel env add SUPABASE_SERVICE_ROLE_KEY
+vercel env add SUPABASE_SECRET_KEY
 vercel env add OPENAI_API_KEY
 vercel env add OPENAI_MODEL
 vercel env add TERRAST_CONNECTOR_MODE
@@ -116,7 +119,8 @@ Record the exact URL and commit, then verify:
 - no hydration, console, failed-resource, CSP, or mixed-content error;
 - keyboard/focus/labels/contrast at desktop and tablet widths;
 - no key, service-role code, signed URL, stack, or source map secret in browser/network output;
-- Supabase cross-tenant/RLS/Storage negative tests if Supabase mode is enabled.
+- for Supabase mode, `/app/data` RLS reads and authorized manual create/update including stale-version rejection;
+- Supabase cross-tenant/RLS/Storage negative tests and advisors if Supabase mode is enabled.
 
 ## 6. Production promotion and rollback
 
@@ -126,4 +130,4 @@ After promotion, verify the public URL from a clean browser session and record P
 
 ## 7. Exact incomplete reason
 
-Vercel project creation, repository connection, non-secret Demo Mode environment configuration, protected main merge, public Preview and Git-connected Production deployments, and browser verification are complete. The same remote Playwright suite passed 3/3 against both URLs, the custom 404 rendered, and the application emitted no captured console/page errors. Supabase-backed production mode remains incomplete because no remote Supabase project or approved credentials were supplied, and the non-AI `SupabaseRepository` schema adapter/server commands are intentionally fail-closed. Configuration files alone are not treated as deployment evidence.
+Vercel project creation, repository connection, non-secret Demo Mode environment configuration, protected main merge, public Preview and Git-connected Production deployments, and browser verification are complete. The same remote Playwright suite passed 3/3 against both URLs, the custom 404 rendered, and the application emitted no captured console/page errors. The first Supabase production slice—`/app/data` RLS reads plus one service-only atomic manual metric/audit command—is implemented in code but is not part of a verified Supabase-mode deployment. No remote Supabase project or approved credentials were supplied; remote migration application, pgTAP, RLS/Storage tests, and advisors are unexecuted. All other non-AI mutations remain fail-closed. Configuration files alone are not treated as deployment evidence.

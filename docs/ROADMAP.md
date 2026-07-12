@@ -24,11 +24,13 @@ Exit evidence for the synthetic demo: verified URLs, golden-scenario browser res
 Outcome: an approved, supportable pilot with tightly bounded data and users.
 
 - TERRAST discovery and interface-control document; sandbox adapter and contract tests.
-- Implement the non-AI `SupabaseRepository` schema adapter and audited server commands, then execute migration/RLS/Storage/pgTAP tests against an isolated remote project.
+- First vertical slice implemented in code: `/app/data` reads companies, periods, selected-tenant/global metric definitions, current and historical values, and evidence IDs through RLS, while one service-only RPC preserves the exact effective role and atomically saves a UUID-stable manual metric value plus value/reason/scope/boundary hashes with optimistic concurrency. Production export remains fail-closed.
+- Apply both migrations to an isolated remote project and execute pgTAP, RLS/Storage positive and negative tests, database/security advisors, backup and rollback rehearsal. None of this remote evidence exists yet.
+- Extend `SupabaseRepository` with reviewed, audited commands for disclosure, review/approval, sync, supplier, transition, consent, evidence and export workflows; until then those non-AI mutations remain fail-closed.
 - Pilot tenancy/group model, onboarding/offboarding, MFA/SSO decision, role reviews.
 - Approved SSBJ/ISSB catalog governance and authoritative emission-factor process.
 - Consent/legal/privacy notices, DPA/subprocessors, retention/deletion/export/legal hold.
-- Malware quarantine/scanning, distributed rate limiting/WAF, CSP/security headers.
+- Malware quarantine/scanning, WAF and network abuse controls beyond the implemented manual-metric database limiter, CSP/security headers.
 - Purpose-built aggregate views with minimum cohorts, suppression and re-identification review.
 - OpenAI/provider data controls or an approved alternative; tenant opt-out and redaction.
 - Observability, SIEM/security alerts, backups/PITR, restore and incident exercises.

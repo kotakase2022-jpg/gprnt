@@ -53,7 +53,23 @@ export type WorkspaceMetric = {
   confidence: number;
   verification: "Verified" | "Evidence attached" | "Pending";
   updatedAt: string;
+  changeReason?: string;
+  consolidationScope?: string;
+  organizationalBoundary?: string;
+  catalogState?: "current" | "historical";
 };
+
+type WorkspaceMetricInput = Pick<
+  WorkspaceMetric,
+  | "metricCode"
+  | "label"
+  | "category"
+  | "value"
+  | "unit"
+  | "changeReason"
+  | "consolidationScope"
+  | "organizationalBoundary"
+>;
 
 type WorkspaceState = {
   baseReadiness: number;
@@ -123,12 +139,7 @@ type DemoWorkspaceValue = WorkspaceState & {
     reason?: string,
   ) => void;
   executeSync: () => { applied: number; skipped: number };
-  addMetric: (
-    input: Pick<
-      WorkspaceMetric,
-      "metricCode" | "label" | "category" | "value" | "unit"
-    >,
-  ) => void;
+  addMetric: (input: WorkspaceMetricInput) => void;
   saveDraft: (draft: string) => void;
   applyAiDraft: (
     draft: string,
@@ -701,7 +712,7 @@ export function DemoWorkspaceProvider({
       mutate(
         "metric.created",
         input.metricCode,
-        `${input.label}を手動入力`,
+        `${input.label}を手動入力${input.changeReason ? `（理由: ${input.changeReason}）` : ""}`,
         (current) => ({
           ...current,
           additionalInputs: Math.max(0, current.additionalInputs - 1),

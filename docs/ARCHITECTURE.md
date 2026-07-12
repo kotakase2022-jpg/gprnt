@@ -10,7 +10,7 @@ The architecture makes the complete demo usable without external credentials whi
 flowchart LR
   U["Company / reviewer / supplier / operator user"] --> N["Next.js application"]
   N --> D["DemoRepository<br/>synthetic local state"]
-  N -. "production adapter pending" .-> S["SupabaseRepository skeleton<br/>Postgres + private Storage"]
+  N --> S["SupabaseRepository<br/>/app/data read + manual metric slice"]
   N --> C["TerrastConnector"]
   C --> M["Mock connector"]
   C --> I["CSV / JSON import"]
@@ -43,7 +43,9 @@ The diagram does not assert a TERRAST endpoint or a JPX integration. JPX is a pr
 
 With valid Supabase public configuration and `NEXT_PUBLIC_DEMO_MODE=false`, the app uses Supabase Auth, rejects untrusted roles, hides demo role switching, and guards routes. The AI server route additionally re-queries company membership and every metric/evidence/requirement ID under the user's RLS context before any provider call; only then may a service client append AI/audit provenance.
 
-The general `SupabaseRepository` schema mapper and validated server commands for non-AI workspace mutations are deliberately fail-closed skeletons in this MVP. Until those adapters are implemented and remote RLS tests pass, authenticated mode is not a production data workspace: non-AI screens still show synthetic browser state. This is a production gate, not a claimed completed integration.
+The first non-AI production slice is implemented for `/app/data`. `SupabaseSchemaAdapter` reads companies, reporting periods, active typed metrics, metric values, and linked evidence IDs through the signed-in user's Data API client, so database RLS remains effective. PostgREST embeds use explicit composite-FK hints. The metric catalog is scoped to the selected company's organization plus global rows, tenant definitions override matching global codes, and database metric IDs keep values attached to that exact resolved definition. Its only enabled mutation is manual metric create/update through `POST /api/workspace/metric-values`; the browser never receives the server secret. Production CSV/export actions remain unavailable until an audited server command exists.
+
+Every other non-AI repository mutation remains explicitly fail-closed. Authenticated mode is therefore a real-data metric slice, not a complete production workspace. No remote Supabase project was supplied, so the migration, pgTAP, RLS/Storage negative tests, and database/security advisors have not been run remotely.
 
 ### TERRAST connector modes
 
@@ -51,7 +53,29 @@ The general `SupabaseRepository` schema mapper and validated server commands for
 - `csv` / `json`: validated import using the same normalized connector output.
 - `api`: skeleton that fails closed until an authorized contract is configured.
 
-## 5. Core command flow (production target)
+## 5. Implemented manual metric command
+
+```mermaid
+sequenceDiagram
+  participant UI as /app/data
+  participant UserAPI as User-scoped Supabase client
+  participant Route as POST /api/workspace/metric-values
+  participant Service as Server secret client
+  participant DB as save_manual_metric_value_with_audit
+
+  UI->>UserAPI: RLS reads for period, metric and current value
+  UI->>Route: Bearer JWT + strict input + expectedVersion
+  Route->>UserAPI: getUser + membership/company/open-period/metric checks
+  Route->>Service: initialize only after authorization
+  Service->>DB: service-only SECURITY INVOKER RPC
+  DB->>DB: recheck tenant/resources + lock/version + value write + audit insert
+  DB-->>Route: complete safe saved row from the same transaction
+  Route-->>UI: strict mapped row + correlationId
+```
+
+The route accepts only `system_admin`, `company_admin`, and `preparer` and passes the exact trusted role it authorized. The RPC locks and requires an active membership for that same effective role, rechecks every tenant/resource relationship, rejects non-manual overwrite and stale versions, and stores value/reason/scope/boundary hashes rather than raw values in the audit event. The adapter performs no post-commit enrichment query, so a successful commit cannot be reported as failed by a later reread. `SUPABASE_SECRET_KEY` is preferred; `SUPABASE_SERVICE_ROLE_KEY` is a temporary legacy fallback. The implementation exists in code but has not been applied or exercised against a remote Supabase project.
+
+## 6. Core sync command flow (production target)
 
 ```mermaid
 sequenceDiagram
@@ -79,7 +103,7 @@ sequenceDiagram
 
 Demo Sync Center already calls `MockTerrastConnector`, the pure domain preview/apply logic, and `DemoRepository` transaction/idempotency persistence. The sequence above is the required Supabase implementation target; it is not yet fully wired for every non-AI command.
 
-## 6. Authorization boundaries
+## 7. Authorization boundaries
 
 - `tenant_id` is immutable on `organizations`; child rows carry `organization_id`.
 - Database RLS is defense in depth for direct Data API access. It uses `TO authenticated` plus a membership/ownership predicate.
@@ -87,7 +111,7 @@ Demo Sync Center already calls `MockTerrastConnector`, the pure domain preview/a
 - Platform operator reads are separate: aggregate/anonymous projections are preferred, company summary requires active scoped consent, and detail tables remain same-tenant.
 - Evidence uses object paths beginning with organization ID and a private bucket. The migration enforces Storage access; an authorized signed-URL server command is a production target and is not wired in this demo UI.
 
-## 7. Data and consistency
+## 8. Data and consistency
 
 - Repository commands write the domain record and audit event in one transaction where supported.
 - Sync uses `(organization_id, idempotency_key)` uniqueness. Repeating the same successful request returns the prior result rather than duplicating metric values.
@@ -95,11 +119,11 @@ Demo Sync Center already calls `MockTerrastConnector`, the pure domain preview/a
 - Approval, AI, sync-record, and audit histories are append-only. A reversal is a new event, not destructive editing.
 - Timestamps are stored as `timestamptz`; reporting dates remain explicit `date` values. Display defaults to Asia/Tokyo.
 
-## 8. AI boundary
+## 9. AI boundary
 
 Public Demo Mode always uses the deterministic generator, even if an API key is accidentally present. It allowlists demo task/label/unit vocabulary before producing prose so arbitrary client wording is not echoed as an endorsement. In authenticated mode, the server ignores client-provided facts: it verifies company membership, reloads current/prior metric values, requirement summary, and evidence IDs through RLS, hashes the authoritative packet, and rejects cross-company or missing IDs. OpenAI output is Zod-validated and every cited ID must be a subset of that permitted packet. Success, insufficient evidence, and validation/provider failure append AI provenance and an audit event atomically through a service-role-only, `SECURITY INVOKER` RPC after authorization. Provider errors never mutate an approved response.
 
-## 9. Failure handling and observability
+## 10. Failure handling and observability
 
 - Domain/validation errors return stable public codes and field issues.
 - Unexpected errors return a generic message and correlation ID; stack traces and provider bodies stay server-side and are redacted.
@@ -107,11 +131,11 @@ Public Demo Mode always uses the deterministic generator, even if an API key is 
 - Audit logs record security-relevant actions; operational logs are separate and must not contain evidence payloads or secrets.
 - Production should add structured traces, rate-limit telemetry, security alerts, backup/PITR monitoring, and retention controls.
 
-## 10. Deployment topology
+## 11. Deployment topology
 
-The current deployment target is a synthetic Demo Mode Next.js project on Vercel with no remote data credentials. A future Supabase-mode topology requires an approved Supabase region/project and optional server-side OpenAI calls. Preview deployments use synthetic or explicitly non-production data. Supabase-mode promotion additionally requires migration verification and RLS negative tests; every mode requires environment review and smoke testing. See [DEPLOYMENT.md](./DEPLOYMENT.md).
+The current deployment target is a synthetic Demo Mode Next.js project on Vercel with no remote data credentials. The `/app/data` Supabase slice is implemented in the repository but is not deployed as a verified Supabase-mode environment. Promotion requires an approved Supabase region/project, reviewed migration application, pgTAP, RLS/Storage negative tests, advisors, environment review, and browser smoke testing. Preview deployments use synthetic or explicitly non-production data. See [DEPLOYMENT.md](./DEPLOYMENT.md).
 
-## 11. Architecture decisions
+## 12. Architecture decisions
 
 1. **Repository and connector ports:** preserve offline demo value and make provider replacement testable.
 2. **No invented TERRAST contract:** API adapter is fail-closed until documented inputs exist.

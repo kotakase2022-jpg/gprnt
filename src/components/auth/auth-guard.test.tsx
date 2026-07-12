@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   mode: "demo" as "demo" | "supabase" | "misconfigured",
   replace: vi.fn(),
   syncTrustedRole: vi.fn(),
+  syncTrustedCompanies: vi.fn(),
+  companyOrder: vi.fn(),
   getSession: vi.fn(),
   getUser: vi.fn(),
   signOut: vi.fn(),
@@ -18,7 +20,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/components/demo/demo-session", () => ({
-  useDemoSession: () => ({ syncTrustedRole: mocks.syncTrustedRole }),
+  useDemoSession: () => ({
+    syncTrustedRole: mocks.syncTrustedRole,
+    syncTrustedCompanies: mocks.syncTrustedCompanies,
+  }),
 }));
 
 vi.mock("@/lib/auth/runtime", () => ({
@@ -33,6 +38,9 @@ vi.mock("@/lib/supabase/client", () => ({
       signOut: mocks.signOut,
       onAuthStateChange: mocks.onAuthStateChange,
     },
+    from: () => ({
+      select: () => ({ order: mocks.companyOrder }),
+    }),
   }),
 }));
 
@@ -41,6 +49,9 @@ describe("AppAuthGuard", () => {
     mocks.mode = "demo";
     mocks.replace.mockReset();
     mocks.syncTrustedRole.mockReset();
+    mocks.syncTrustedCompanies.mockReset();
+    mocks.companyOrder.mockReset();
+    mocks.companyOrder.mockResolvedValue({ data: [], error: null });
     mocks.getSession.mockReset();
     mocks.getUser.mockReset();
     mocks.signOut.mockReset();
@@ -78,7 +89,7 @@ describe("AppAuthGuard", () => {
     expect(screen.queryByText("protected workspace")).not.toBeInTheDocument();
   });
 
-  it("verifies the user and syncs only the app_metadata role", async () => {
+  it("verifies the user and syncs the trusted role and RLS-visible companies", async () => {
     mocks.mode = "supabase";
     mocks.getSession.mockResolvedValue({
       data: { session: { access_token: "session-token" } },
@@ -94,6 +105,16 @@ describe("AppAuthGuard", () => {
       },
       error: null,
     });
+    mocks.companyOrder.mockResolvedValue({
+      data: [
+        {
+          id: "company-1",
+          legal_name: "テスト株式会社",
+          company_code: "C-001",
+        },
+      ],
+      error: null,
+    });
     render(
       <AppAuthGuard>
         <div>protected workspace</div>
@@ -103,6 +124,9 @@ describe("AppAuthGuard", () => {
     expect(await screen.findByText("protected workspace")).toBeVisible();
     expect(mocks.getUser).toHaveBeenCalledWith("session-token");
     expect(mocks.syncTrustedRole).toHaveBeenCalledWith("reviewer_approver");
+    expect(mocks.syncTrustedCompanies).toHaveBeenCalledWith([
+      { id: "company-1", name: "テスト株式会社", code: "C-001" },
+    ]);
     expect(mocks.replace).not.toHaveBeenCalled();
   });
 });

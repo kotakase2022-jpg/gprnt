@@ -15,7 +15,7 @@ describe("synthetic demo seed", () => {
         (company) =>
           company.isSynthetic &&
           company.companyCode.startsWith("DEMO-") &&
-          company.securityCode.startsWith("DEMO-"),
+          company.securityCode?.startsWith("DEMO-") === true,
       ),
     ).toBe(true);
     for (const company of seed.companies) {
