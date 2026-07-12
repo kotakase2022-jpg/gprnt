@@ -2,12 +2,13 @@
 
 ## Cycle 4 — first Supabase production data slice
 
-- **Current branch:** `agent/supabase-data-path-p0`
-- **Target PR:** [#4](https://github.com/kotakase2022-jpg/gprnt/pull/4) — Draft from `agent/supabase-data-path-p0` to protected `main`
+- **Cycle 4 release-evidence branch:** `agent/supabase-p0-release-evidence`
+- **Cycle 4 implementation PR:** [#4](https://github.com/kotakase2022-jpg/gprnt/pull/4) — squash-merged through protected `main` as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
+- **Cycle 4 release-evidence PR:** [#5](https://github.com/kotakase2022-jpg/gprnt/pull/5) — records the already-verified runtime release and makes the SQL static checker line-ending independent; GitHub is authoritative for its lifecycle state
 - **Implementation PR:** [#1](https://github.com/kotakase2022-jpg/gprnt/pull/1) merged to `main` as `5f22374`
 - **Release evidence PR:** [#2](https://github.com/kotakase2022-jpg/gprnt/pull/2) merged to `main` as `9ce1843`
 - **Cycle number:** 4 (explicitly resumed by the user after the completed three-cycle synthetic-demo release)
-- **Status:** first production-readiness slice implemented and fully verified at the application/static level; Demo Mode remains verified, while SQL apply/pgTAP/advisors are blocked on a dedicated Supabase project
+- **Status:** first production-readiness slice is merged and verified on public Production in Demo Mode; SQL apply/pgTAP/advisors and enabling Supabase mode remain blocked on a dedicated Supabase project
 - **Evaluation:** 87 / 100; see `docs/SELF_EVALUATION.md`
 
 ### Improvement history
@@ -62,27 +63,32 @@
 - `npm run test:e2e`: passed — 3/3 Chromium tests. Golden scenario covers login, company selection, sync preview/apply/conflict, manual reason/scope/boundary persistence, AI draft, submit, revision, edit, resubmit, approval, approved edit lock, report and operator reflection; additional tests cover tablet layout, company isolation and denied role deep links.
 - Cycle 3 historical evidence: the then-current 3/3 suite passed against `https://terrast-disclosure-85q5ks9uu-kotakase2022-jpgs-projects.vercel.app`. This is distinct from the Cycle 4 Preview evidence recorded on the next line.
 - `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app npm run test:e2e`: passed — Cycle 4 Preview 3/3, including the updated manual reason/scope/boundary provenance assertion, with no captured console/page errors.
+- `PLAYWRIGHT_BASE_URL=https://terrast-disclosure-hub.vercel.app npm run test:e2e`: passed — Cycle 4 Production 3/3 after PR #4 merged; landing and Demo company-admin `/app/data` also reported zero browser-console and page errors.
+- PR #5 evidence Preview remote Playwright: passed 3/3. Its GitHub E2E job succeeded after one retry where stacked success toasts temporarily intercepted the role-switch click; the same golden scenario then passed six additional local stress reruns (three parallel and three serial) without recurrence.
 - `npm run agents:check`: passed — `AGENTS.md` and `CLAUDE.md` are byte-identical.
+- `npm run db:check`: passed with both Git/CI LF and Windows-checkout CRLF SQL inputs after normalizing line endings inside the read-only static checker.
 - Build output: 20 route entries including dynamic `/api/ai/disclosure` and `/api/workspace/metric-values`; static generation completed for 22 pages/assets.
 - `npm audit`: two moderate transitive advisories from Next.js's bundled PostCSS remain; npm's suggested force fix is a destructive Next.js downgrade and was not applied.
 
 ### Deployment / external state
 
-- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — the stable alias tracks the latest protected `main` deployment. The last explicitly inspected runtime deployment before this final handoff update was `dpl_9JgBUKyKsL9i4ign7qa6cDS7rk8C`, for which Vercel API reported `githubCommitRef=main` and `githubCommitSha=9ce1843b7d474a5512229e18836e14914c713fb3`; remote Playwright 3/3 passed against the alias afterward. A docs-only handoff merge may advance the deployment ID without changing runtime behavior.
-- **Cycle 4 Vercel Preview URL:** https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app — READY as `dpl_7Zc9AsgchHNFTNKzQYx285bwYv8Z`; remote Playwright 3/3 and an independent browser snapshot of landing + `/app/data` passed with empty console/page-error output
-- **GitHub Cycle 4 PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/4 — Draft; head `6f126ed97c292c9c390a2df706a1c6e3b1fa16e2` before this evidence-only handoff update
+- **Vercel Production URL:** https://terrast-disclosure-hub.vercel.app — PR #4 runtime deployment `dpl_9MEM7tHkW4WQQkpyBa4Z5u5Nw6kG` was READY for `githubCommitRef=main` / `githubCommitSha=cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`; its unique URL is https://terrast-disclosure-qujsu0kd6-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + Demo `/app/data` browser checks passed with zero console/page errors. The release-evidence/static-checker merge may advance the deployment ID without changing application runtime code.
+- **Cycle 4 Vercel Preview URL:** https://terrast-disclosure-hub-git-ag-a16f5c-kotakase2022-jpgs-projects.vercel.app — final implementation head `e5a3910ad6a71d65b9d3c4aab7eefdba5b65f300` was READY as `dpl_FCzhk8jL4uz4fYwiFeJru2wa479S`; its unique URL is https://terrast-disclosure-8a840bcdz-kotakase2022-jpgs-projects.vercel.app. Remote Playwright 3/3 and landing + `/app/data` browser checks passed with zero console/page errors.
+- **Cycle 4 release-evidence Preview URL:** https://terrast-disclosure-hub-git-ag-f10375-kotakase2022-jpgs-projects.vercel.app — PR #5 pre-final-evidence head `e1072db17d60ed97bc838fecc14d2c20fbb313da` was READY as `dpl_CqHcrG6z62okLw6Y5UoYsb5VB7UD`; its unique URL is https://terrast-disclosure-q5veqnb5i-kotakase2022-jpgs-projects.vercel.app and remote Playwright passed 3/3.
+- **GitHub Cycle 4 PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/4 — MERGED as `cdff7bcd3122c2a1f80d98d42fa4355a78cc8027`
 - **GitHub implementation PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/1 — MERGED
 - **GitHub release-evidence PR URL:** https://github.com/kotakase2022-jpg/gprnt/pull/2 — MERGED
 - **Vercel project/Git integration/non-secret Demo env:** configured
 - **Remote Supabase:** not created or applied
-- **GitHub CI:** all seven required jobs passed on Cycle 4 PR #4 head `6f126ed`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel and Preview Comments checks also passed. Historical PR #1/#2 checks remain documented in their PRs.
+- **GitHub CI:** all seven required jobs passed on final Cycle 4 PR #4 head `e5a3910ad6a71d65b9d3c4aab7eefdba5b65f300`: `lint`, `typecheck`, `unit-test`, `build`, `e2e-smoke`, `agents-sync`, `db-static`; Vercel and Preview Comments checks also passed. Historical PR #1/#2 checks remain documented in their PRs.
+- **Release-evidence CI:** all seven required jobs plus Vercel and Preview Comments passed on PR #5 head `e1072db17d60ed97bc838fecc14d2c20fbb313da` before this final evidence update. The successful E2E check contained the one toast-related retry described above; follow-up local and remote reruns were clean.
 - **Branch protection:** active and API-verified — PR required for admins, strict seven checks, conversation resolution, stale-review dismissal, force push/deletion blocked; approvals remain zero for the documented single-maintainer bootstrap.
 
 ### External review status
 
 - Independent Codex subagents performed two passes of security and release-diff audits. Findings fixed before publication include effective-role substitution, post-commit ambiguous failure, mutable manual identity, tenant/global catalog collision, historical-value hiding, PostgREST FK ambiguity, missing reason/scope/boundary audit provenance, unsafe scalar coercion, invented provenance fallback, Auth-delete history cascade, closed/no-catalog dead actions, tenant form-state leakage, Demo provenance loss, and unaudited production CSV exposure.
 - Claude Code `2.1.207` was re-invoked for the Cycle 4 diff through the official `@anthropic-ai/claude-code` package after the shared-rule prompt, but independent review could not run because it returned `Not logged in · Please run /login`. Do not claim Claude review completed.
-- CodeRabbit: `@coderabbitai review` was requested on PR #4 at https://github.com/kotakase2022-jpg/gprnt/pull/4#issuecomment-4951847075; no Cycle 4 response is recorded yet, so no CodeRabbit review is claimed.
+- CodeRabbit: `@coderabbitai review` was requested on PR #4 at https://github.com/kotakase2022-jpg/gprnt/pull/4#issuecomment-4951847075; no response, review thread or inline comment existed at the final pre-merge inspection, so no CodeRabbit review is claimed.
 - Cursor Bugbot: its installed GitHub integration attempted PR #4 automatically but reported `usage limit reached`, so it supplied no review finding.
 
 ### Unresolved items
